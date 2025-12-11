@@ -179,9 +179,18 @@ async function handleFetchUrl(item: UrlInputItem) {
   <div class="space-y-6">
     <!-- Paste Text Area -->
     <div>
-      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-        {{ t('input.pasteText') }}
-      </label>
+      <div class="flex items-center justify-between mb-2">
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+          {{ t('input.pasteText') }}
+        </label>
+        <button
+          v-if="projectStore.inputContent"
+          class="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+          @click="projectStore.setInputContent('')"
+        >
+          {{ t('common.clear') }}
+        </button>
+      </div>
       <textarea
         :value="projectStore.inputContent"
         :placeholder="t('input.placeholder')"
@@ -335,25 +344,6 @@ async function handleFetchUrl(item: UrlInputItem) {
         <span class="text-xs text-slate-500 dark:text-slate-400">{{ t('input.dropzone') }}</span>
         <span class="text-xs text-slate-400 dark:text-slate-500">{{ t('input.supportedFormats') }}</span>
       </label>
-    </div>
-
-    <!-- Content Preview -->
-    <div
-      v-if="projectStore.inputContent"
-      class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-medium text-slate-600 dark:text-slate-300">{{ t('input.contentPreview') }}</span>
-        <button
-          class="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
-          @click="projectStore.setInputContent('')"
-        >
-          {{ t('common.clear') }}
-        </button>
-      </div>
-      <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">
-        {{ projectStore.inputContent.substring(0, 300) }}{{ projectStore.inputContent.length > 300 ? '...' : '' }}
-      </p>
     </div>
 
     <!-- Error Message -->
