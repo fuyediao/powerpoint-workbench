@@ -156,7 +156,7 @@ export const useSettingsStore = defineStore('settings', () => {
           ollamaAvailableModels.value = data.models.map((m) => m.name);
           // 如果沒有選擇模型但有可用模型，自動選擇第一個
           if (!ollamaModel.value && ollamaAvailableModels.value.length > 0) {
-            ollamaModel.value = ollamaAvailableModels.value[0];
+            ollamaModel.value = ollamaAvailableModels.value[0]!;
           }
         }
         return true;
@@ -204,7 +204,7 @@ export const useSettingsStore = defineStore('settings', () => {
               comfyuiAvailableModels.value = ckptNames;
               // 如果沒有選擇模型但有可用模型，自動選擇第一個
               if (!comfyuiModel.value && comfyuiAvailableModels.value.length > 0) {
-                comfyuiModel.value = comfyuiAvailableModels.value[0];
+                comfyuiModel.value = comfyuiAvailableModels.value[0]!;
               }
             }
           }
