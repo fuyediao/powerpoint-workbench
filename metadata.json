@@ -1,0 +1,5 @@
+{
+  "name": "Gemini PowerPoint Workbench",
+  "description": "A professional AI-powered PowerPoint generation workbench. Transform documents into visual slides using Gemini 3 Pro, Nano Banana Pro, and Veo. Supports local AI (Ollama/ComfyUI) fallback.",
+  "requestFramePermissions": []
+}

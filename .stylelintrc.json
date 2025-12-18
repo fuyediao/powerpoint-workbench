@@ -1,0 +1,78 @@
+{
+    "extends": [
+        "stylelint-config-standard",
+        "stylelint-config-standard-vue"
+    ],
+    "rules": {
+        "selector-class-pattern": null,
+        "custom-property-pattern": null,
+        "keyframes-name-pattern": null,
+        "value-keyword-case": null,
+        "declaration-block-no-redundant-longhand-properties": null,
+        "shorthand-property-no-redundant-values": null,
+        "import-notation": null,
+        "at-rule-no-unknown": [
+            true,
+            {
+                "ignoreAtRules": [
+                    "tailwind",
+                    "apply",
+                    "variants",
+                    "responsive",
+                    "screen",
+                    "layer",
+                    "custom-variant",
+                    "import"
+                ]
+            }
+        ],
+        "function-no-unknown": [
+            true,
+            {
+                "ignoreFunctions": [
+                    "theme"
+                ]
+            }
+        ],
+        "no-descending-specificity": null,
+        "selector-pseudo-class-no-unknown": [
+            true,
+            {
+                "ignorePseudoClasses": [
+                    "deep",
+                    "global"
+                ]
+            }
+        ],
+        "selector-pseudo-element-no-unknown": [
+            true,
+            {
+                "ignorePseudoElements": [
+                    "v-deep",
+                    "v-global",
+                    "v-slotted"
+                ]
+            }
+        ],
+        "property-no-unknown": [
+            true,
+            {
+                "ignoreProperties": [
+                    "composes"
+                ]
+            }
+        ],
+        "comment-empty-line-before": null,
+        "comment-whitespace-inside": null
+    },
+    "ignoreFiles": [
+        "**/*.js",
+        "**/*.jsx",
+        "**/*.tsx",
+        "**/*.ts",
+        "**/*.json",
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/build/**"
+    ]
+}
