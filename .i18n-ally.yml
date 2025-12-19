@@ -1,0 +1,77 @@
+# i18n Ally 配置文件
+# 用於 VS Code/Cursor 的 i18n 管理插件
+
+# 翻譯文件路徑
+localesPaths:
+  - src/i18n/locales
+
+# 鍵名風格：nested（點號分隔，如 "app.title"）
+keystyle: nested
+
+# 啟用的框架
+enabledFrameworks:
+  - vue
+  - general
+
+# 源語言（主要語言，用於對比）
+sourceLanguage: en
+
+# 顯示語言（插件界面顯示的語言）
+displayLanguage: zh-TW
+
+# 啟用的解析器
+enabledParsers:
+  - json
+
+# 文件路徑匹配模式
+pathMatcher: "{locale}.json"
+
+# 支持的語言列表
+locales:
+  - en
+  - zh-CN
+  - zh-TW
+
+# 語言顯示名稱
+localeDisplayNames:
+  en: English
+  zh-CN: 简体中文
+  zh-TW: 繁體中文
+
+# 自動排序鍵
+sortKeys: true
+
+# 保持已完成的翻譯
+keepFulfilled: true
+
+# 啟用註釋功能
+annotations: true
+
+# 掃描忽略的路徑和使用情況掃描
+usage:
+  scanningIgnore:
+    - node_modules/**
+    - dist/**
+    - .git/**
+    - .vscode/**
+  scanningDepth: 3
+  # 忽略的鍵（不會在缺失時警告）
+  ignoreKeys:
+    - "app.title"
+
+# 重構模板（用於快速替換代碼中的翻譯調用）
+refactor:
+  templates:
+    - source: "getTranslation(lang, '{key}')"
+      target: "t.value('{key}')"
+    - source: "getTranslation({locale}, '{key}')"
+      target: "t.value('{key}')"
+    - source: "t('{key}')"
+      target: "t.value('{key}')"
+
+# 命名空間（可選，如果使用命名空間）
+# namespace: false
+
+# 翻譯提示
+# 當鍵缺失時的提示
+# missingTranslationPrompt: true
