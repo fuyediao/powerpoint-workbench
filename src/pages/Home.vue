@@ -62,69 +62,46 @@ const handleFileUpload = async (e: Event) => {
     return
   }
 
+  // 直接存儲文件對象，所有文件都直接給 Gemini API 解析
   for (const file of Array.from(files)) {
     const fileId = crypto.randomUUID()
-    const isImage = file.type.startsWith('image/')
-    const isText = file.type.startsWith('text/') ||
-      file.name.endsWith('.txt') ||
-      file.name.endsWith('.md') ||
-      file.name.endsWith('.json') ||
-      file.name.endsWith('.pdf')
-    const isOffice = file.name.endsWith('.docx') ||
-      file.name.endsWith('.doc') ||
-      file.name.endsWith('.xlsx') ||
-      file.name.endsWith('.xls') ||
-      file.name.endsWith('.pptx') ||
-      file.name.endsWith('.ppt') ||
-      file.type.includes('wordprocessingml') ||
-      file.type.includes('spreadsheetml') ||
-      file.type.includes('presentationml')
-
-    if (isImage) {
-      // 處理圖片
+    
+    // 判斷文件類型（用於顯示）
+    let fileType: 'text' | 'image' | 'document' = 'document'
+    if (file.type.startsWith('image/')) {
+      fileType = 'image'
+    } else if (file.type.startsWith('text/') || 
+               file.name.endsWith('.txt') || 
+               file.name.endsWith('.md') || 
+               file.name.endsWith('.json')) {
+      fileType = 'text'
+    }
+    
+    // 對於圖片，生成預覽（僅用於 UI 顯示）
+    if (fileType === 'image') {
       const reader = new FileReader()
       reader.onload = (ev) => {
         const dataUrl = ev.target?.result as string
         const uploadedFile: UploadedFile = {
           id: fileId,
           name: file.name,
-          type: 'image',
-          content: dataUrl,
+          type: fileType,
+          content: dataUrl, // 僅用於預覽顯示
           file: file
         }
         store.addUploadedFile(uploadedFile)
       }
       reader.readAsDataURL(file)
-    } else if (isText) {
-      // 處理文本文件
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        const text = ev.target?.result as string
-        const uploadedFile: UploadedFile = {
-          id: fileId,
-          name: file.name,
-          type: 'text',
-          content: text,
-          file: file
-        }
-        store.addUploadedFile(uploadedFile)
+    } else {
+      // 其他文件類型（包括 txt、markdown）直接存儲，全部交給 AI 解析
+      const uploadedFile: UploadedFile = {
+        id: fileId,
+        name: file.name,
+        type: fileType,
+        content: '', // 不需要預覽，AI 會直接解析文件內容
+        file: file
       }
-      reader.readAsText(file)
-    } else if (isOffice) {
-      // 處理 Office 文件（存儲為 base64，後續可能需要後端處理）
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        const base64 = ev.target?.result as string
-        const uploadedFile: UploadedFile = {
-          id: fileId,
-          name: file.name,
-          type: 'document',
-          content: base64,
-          file: file
-        }
-        store.addUploadedFile(uploadedFile)
-      }
-      reader.readAsDataURL(file)
+      store.addUploadedFile(uploadedFile)
     }
   }
 
@@ -242,11 +219,14 @@ const handleTextUpdate = (content: string) => {
                 <Upload :size="14" />
                 {{ t('input.upload') }}
                 <input type="file" class="hidden"
-                  accept=".txt,.md,.json,.pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.jpg,.jpeg,.png,.gif,.webp" multiple
+                  accept=".txt,.md,.json,.pdf,.csv,.xlsx,.xls,.jpg,.jpeg,.png,.gif,.webp" multiple
                   @change="handleFileUpload" />
               </label>
             </div>
           </div>
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {{ t('input.file_upload_hint') }}
+          </p>
 
           <!-- Uploaded Files List -->
           <div v-if="store.uploadedFiles.length > 0" class="mt-4 space-y-2">
@@ -276,25 +256,19 @@ const handleTextUpdate = (content: string) => {
                     {{ file.name }}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    <span v-if="file.type === 'image'">圖片</span>
-                    <span v-else-if="file.type === 'document'">Office 文檔</span>
-                    <span v-else>文檔</span>
+                    <span v-if="file.type === 'image'">圖片（將由 AI 解析）</span>
+                    <span v-else-if="file.type === 'document'">文檔（將由 AI 解析）</span>
+                    <span v-else>文本文件（將由 AI 解析）</span>
                     · {{ formatFileSize(file.file.size) }}
                   </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2">
-                  <!-- Insert Button (for text files only) -->
-                  <button v-if="file.type === 'text'" @click="store.insertFileContentToText(file.id)"
-                    class="shrink-0 px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
-                    title="插入到文本區域">
-                    插入
-                  </button>
-                  <!-- Office Document Notice -->
-                  <span v-if="file.type === 'document'"
-                    class="shrink-0 px-2 py-1 text-xs text-gray-500 dark:text-gray-400" title="Office 文件需要後端處理">
-                    Office
+                  <!-- File Type Badge -->
+                  <span class="shrink-0 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded"
+                    title="所有文件都將直接由 AI 解析">
+                    {{ file.type === 'image' ? '圖片' : file.type === 'text' ? '文本' : '文檔' }}
                   </span>
                   <!-- Remove Button -->
                   <button @click="removeFile(file.id)"

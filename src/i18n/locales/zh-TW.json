@@ -47,6 +47,7 @@
     "input.placeholder": "在此貼上文字、Markdown 或提供網址...",
     "input.upload": "上傳檔案",
     "input.expand": "展開",
+    "input.file_upload_hint": "💡 提示：Word 和 PPT 檔案請先轉存為 PDF 格式上傳；Excel 檔案會自動轉換為 CSV 格式",
     "nav.new": "新建項目",
     "nav.settings": "設定",
     "settings.apiKey": "Google API Key",

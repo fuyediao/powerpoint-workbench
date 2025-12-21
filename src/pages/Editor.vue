@@ -48,18 +48,56 @@ const activeSlide = computed(() => store.slides[activeSlideIndex.value] || null)
 
 // Helper to trigger outline generation if slides are empty
 onMounted(async () => {
-  if (store.slides.length === 0 && store.config.sourceText && !isGenerating.value) {
+  if (store.slides.length === 0 && !isGenerating.value) {
+    // 檢查是否有文本或上傳的文件
+    const hasText = store.config.sourceText && store.config.sourceText.trim().length > 0
+    const hasFiles = store.uploadedFiles.length > 0
+    
+    if (!hasText && !hasFiles) {
+      // 既沒有文本也沒有文件，返回首頁
+      return
+    }
+    
     isGenerating.value = true
     loadingMessage.value = t.value('status.thinking')
     try {
       if (store.config.provider === AiProvider.GOOGLE && store.config.apiKey) {
-        const newSlides = await generateOutline(
-          store.config.apiKey,
-          store.config.sourceText,
-          store.config.pageCount,
-          store.config.style,
-          store.config.customStylePrompt
-        )
+        let newSlides: SlideData[]
+        
+        // 優先使用文件，如果有文件就全部用文件（包括文本文件）
+        // 如果只有文本沒有文件，則使用文本
+        if (hasFiles) {
+          // 如果有上傳的文件，所有文件（包括 txt、markdown）都直接給 Gemini 解析
+          const files = store.uploadedFiles.map(uf => uf.file)
+          
+          // 如果同時有文本輸入，將文本也轉換為 File 對象一起傳給 Gemini
+          if (hasText) {
+            // 將文本轉換為 Blob，然後轉為 File
+            const textBlob = new Blob([store.config.sourceText], { type: 'text/plain' })
+            const textFile = new File([textBlob], 'input-text.txt', { type: 'text/plain' })
+            files.push(textFile)
+          }
+          
+          newSlides = await generateOutline(
+            store.config.apiKey,
+            files, // 傳遞文件數組，所有內容都由 Gemini 解析
+            store.config.pageCount,
+            store.config.style,
+            store.config.customStylePrompt
+          )
+        } else if (hasText) {
+          // 如果只有文本，直接傳遞文本字符串
+          newSlides = await generateOutline(
+            store.config.apiKey,
+            store.config.sourceText, // 傳遞文本字符串
+            store.config.pageCount,
+            store.config.style,
+            store.config.customStylePrompt
+          )
+        } else {
+          throw new Error('No content provided')
+        }
+        
         store.setSlides(newSlides)
       } else {
         // Mock local or fallback

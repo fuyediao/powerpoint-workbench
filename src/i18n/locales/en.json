@@ -18,6 +18,7 @@
   "input.placeholder": "Paste text, markdown, or provide URLs here...",
   "input.upload": "Upload File",
   "input.expand": "Expand",
+  "input.file_upload_hint": "💡 Tip: Word and PPT files should be converted to PDF format before uploading; Excel files will be automatically converted to CSV format",
   "config.pages": "Number of Pages",
   "config.style": "Presentation Style",
   "config.custom": "Custom Design Requirements (Optional)",

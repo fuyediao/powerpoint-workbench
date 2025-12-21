@@ -57,14 +57,6 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  function insertFileContentToText(fileId: string) {
-    const file = uploadedFiles.value.find(f => f.id === fileId)
-    if (file && file.type === 'text') {
-      const existingText = config.value.sourceText
-      config.value.sourceText = existingText ? `${existingText}\n\n${file.content}` : file.content
-    }
-  }
-
   function clearUploadedFiles() {
     uploadedFiles.value = []
   }
@@ -79,7 +71,6 @@ export const useProjectStore = defineStore('project', () => {
     updateSlide,
     addUploadedFile,
     removeUploadedFile,
-    clearUploadedFiles,
-    insertFileContentToText
+    clearUploadedFiles
   }
 })

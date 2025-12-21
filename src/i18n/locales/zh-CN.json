@@ -47,6 +47,7 @@
   "input.placeholder": "在此粘贴文本、Markdown 或提供网址...",
   "input.upload": "上传文件",
   "input.expand": "展开",
+  "input.file_upload_hint": "💡 提示：Word 和 PPT 文件请先转存为 PDF 格式上传；Excel 文件会自动转换为 CSV 格式",
   "nav.new": "新建项目",
   "nav.settings": "设置",
   "settings.apiKey": "Google API Key",
