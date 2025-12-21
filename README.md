@@ -42,15 +42,25 @@
 - **響應式布局**: 適配各種螢幕尺寸
 
 ### 🌐 多語言支持
-- 英文（English）
-- 簡體中文（Simplified Chinese）
-- 繁體中文（Traditional Chinese）
+- **完整的多語言覆蓋**: 所有 UI 元素均已支持多語言
+- **支持的語言**:
+  - 英文（English）
+  - 簡體中文（Simplified Chinese）
+  - 繁體中文（Traditional Chinese）
+- **動態語言切換**: 實時切換語言，無需重啟應用
 
 ### 🎯 進階功能
 - **深色模式**: 完整的深色主題支持
 - **拖放編輯**: 直觀的投影片編輯界面
 - **演講者備註**: 為每張投影片添加演講稿
 - **批量生成**: 一次生成多張投影片
+- **文件上傳支持**: 
+  - 支持文本文件（.txt, .md, .json, .csv）
+  - 支持圖片文件（.jpg, .jpeg, .png, .gif, .webp）
+  - 支持 PDF 文件
+  - Excel 文件（.xlsx, .xls）自動轉換為 CSV 格式
+  - Word 和 PPT 文件需轉換為 PDF 後上傳
+- **智能導航**: 滾輪切換投影片，頁碼顯示
 
 ## 🏗️ 技術架構
 
@@ -60,6 +70,8 @@
 - **Vite 6.2**: 極速開發體驗
 - **Vue Router 4.5**: 客戶端路由
 - **Pinia 2.3**: 狀態管理
+- **xlsx**: Excel 文件解析和轉換
+- **mammoth**: Word 文檔解析（預留）
 
 ### UI 設計
 - **Tailwind CSS v4**: 現代化的 utility-first CSS 框架
@@ -209,13 +221,16 @@ powerpoint-workbench/
 ### 1. 投影片生成流程
 
 ```typescript
-// 1. 輸入文本內容
+// 1. 輸入文本內容或上傳文件
 const sourceText = "您的演示文稿內容...";
+// 或上傳文件（支持文本、圖片、PDF、Excel）
+const files: File[] = [/* 上傳的文件 */];
 
 // 2. 使用 Gemini 3 Pro 生成大綱
+// 支持文本字符串或文件數組
 const slides = await generateOutline(
   apiKey,
-  sourceText,
+  sourceText, // 或 files
   pageCount,
   style,
   customPrompt
@@ -223,9 +238,10 @@ const slides = await generateOutline(
 
 // 3. 為每張投影片生成視覺元素
 for (const slide of slides) {
-  const image = await generateSlideImage(
+  const image = await generateFullSlideImage(
     apiKey,
-    slide.visualPrompt,
+    slide,
+    customStylePrompt,
     '2K'
   );
 }
@@ -240,6 +256,8 @@ for (const slide of slides) {
 #### `Home.vue`
 - 項目首頁
 - 文本輸入和文件上傳
+- 支持多種文件格式（文本、圖片、PDF、Excel）
+- Excel 文件自動轉換為 CSV
 - 項目配置設置
 - 支持 Google AI 和本地 AI 選擇
 
@@ -247,10 +265,14 @@ for (const slide of slides) {
 - 投影片編輯器主界面
 - 三欄布局：縮略圖、畫布、屬性面板
 - 實時預覽和編輯功能
+- 滾輪切換投影片
+- 頁碼顯示（當前頁/總頁數）
 
 #### `geminiService.ts`
 - Gemini API 封裝
 - 支持文本生成、圖像生成、視頻生成
+- 多模態文件處理（文本、圖片、PDF）
+- Excel 文件自動轉換為 CSV
 - 錯誤處理和重試邏輯
 
 #### `localAiService.ts`
@@ -501,6 +523,17 @@ toggleTheme()
 - `en`: English（英文）
 - `zh-CN`: 簡體中文（Simplified Chinese）
 - `zh-TW`: 繁體中文（Traditional Chinese）
+
+### 多語言覆蓋範圍
+
+項目已實現完整的多語言支持，包括：
+- ✅ 應用標題和導航
+- ✅ 首頁所有 UI 元素
+- ✅ 文件上傳提示和標籤
+- ✅ 編輯器所有界面元素
+- ✅ 設置面板
+- ✅ 導出和生成功能
+- ✅ 錯誤提示和狀態信息
 
 ### 開發工具
 
