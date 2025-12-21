@@ -114,8 +114,16 @@ GEMINI_API_KEY=your_api_key_here
 - 在應用設置中選擇「本地 AI」作為提供商
 
 4. **啟動開發服務器**
+
+**方式一：使用 npm 命令**
 ```bash
 npm run dev
+```
+
+**方式二：使用 Windows 批處理腳本（推薦 Windows 用戶）**
+```bash
+# 雙擊運行或在命令行執行
+dev.bat
 ```
 
 應用將在 `http://localhost:5173` 啟動（Vite 默認端口）
@@ -180,6 +188,7 @@ powerpoint-workbench/
 ├── .vscode/                      # VS Code 配置
 │   └── settings.json            # 工作區設置（包含 i18n Ally 配置）
 ├── .i18n-ally.yml               # i18n Ally 插件配置
+├── dev.bat                      # Windows 開發服務器啟動腳本
 ├── package.json                 # 項目依賴
 ├── metadata.json                # 項目元數據
 └── README.md                    # 項目說明文檔
@@ -297,6 +306,8 @@ const data: SlideData[] = fetchData();
 ```bash
 # 開發模式（帶熱重載）
 npm run dev
+# 或使用 Windows 批處理腳本
+dev.bat
 
 # 類型檢查
 npx tsc --noEmit
