@@ -231,7 +231,7 @@ const handleTextUpdate = (content: string) => {
           <!-- Uploaded Files List -->
           <div v-if="store.uploadedFiles.length > 0" class="mt-4 space-y-2">
             <div class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
-              已上傳文件 ({{ store.uploadedFiles.length }})
+              {{ t('input.uploaded_files').replace('{count}', String(store.uploadedFiles.length)) }}
             </div>
             <div class="space-y-2 max-h-48 overflow-y-auto">
               <div v-for="file in store.uploadedFiles" :key="file.id"
@@ -256,9 +256,9 @@ const handleTextUpdate = (content: string) => {
                     {{ file.name }}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    <span v-if="file.type === 'image'">圖片（將由 AI 解析）</span>
-                    <span v-else-if="file.type === 'document'">文檔（將由 AI 解析）</span>
-                    <span v-else>文本文件（將由 AI 解析）</span>
+                    <span v-if="file.type === 'image'">{{ t('input.file_type_image') }}</span>
+                    <span v-else-if="file.type === 'document'">{{ t('input.file_type_document') }}</span>
+                    <span v-else>{{ t('input.file_type_text') }}</span>
                     · {{ formatFileSize(file.file.size) }}
                   </div>
                 </div>
@@ -267,13 +267,13 @@ const handleTextUpdate = (content: string) => {
                 <div class="flex items-center gap-2">
                   <!-- File Type Badge -->
                   <span class="shrink-0 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded"
-                    title="所有文件都將直接由 AI 解析">
-                    {{ file.type === 'image' ? '圖片' : file.type === 'text' ? '文本' : '文檔' }}
+                    :title="t('input.file_ai_parse_hint')">
+                    {{ file.type === 'image' ? t('input.file_type_badge_image') : file.type === 'text' ? t('input.file_type_badge_text') : t('input.file_type_badge_document') }}
                   </span>
                   <!-- Remove Button -->
                   <button @click="removeFile(file.id)"
                     class="shrink-0 p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                    :aria-label="`移除 ${file.name}`">
+                    :aria-label="t('input.remove_file').replace('{name}', file.name)">
                     <X :size="16" />
                   </button>
                 </div>

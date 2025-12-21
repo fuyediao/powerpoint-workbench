@@ -267,6 +267,20 @@ const goToNextSlide = () => {
   activeSlideIndex.value = Math.min(store.slides.length - 1, activeSlideIndex.value + 1)
 }
 
+// 處理滾輪事件，用於在中央顯示區域切換幻燈片
+const handleWheel = (event: WheelEvent) => {
+  // 防止默認滾動行為
+  event.preventDefault()
+  
+  // 滾輪向下（deltaY > 0）切換到下一個
+  // 滾輪向上（deltaY < 0）切換到上一個
+  if (event.deltaY > 0) {
+    goToNextSlide()
+  } else if (event.deltaY < 0) {
+    goToPrevSlide()
+  }
+}
+
 const updateSlideTitle = (value: string) => {
   if (activeSlide.value) {
     store.updateSlide(activeSlide.value.id, { title: value })
@@ -408,7 +422,7 @@ const handleExport = async (format: ExportFormat) => {
             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-400'
             : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
         ]">
-          <div class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Slide {{ slide.order }}</div>
+          <div class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{{ t('editor.slide_label').replace('{order}', String(slide.order)) }}</div>
           <div class="aspect-video bg-gray-200 dark:bg-gray-800 rounded overflow-hidden relative">
             <img v-if="slide.imageUrl" :src="slide.imageUrl" class="w-full h-full object-cover" />
           </div>
@@ -419,7 +433,8 @@ const handleExport = async (format: ExportFormat) => {
       <!-- Center: Canvas -->
       <main
         class="flex-1 bg-gray-100 dark:bg-gray-950 flex items-center justify-center relative overflow-hidden transition-colors"
-        :class="isPreviewMode ? 'p-0' : 'p-8'">
+        :class="isPreviewMode ? 'p-0' : 'p-8'"
+        @wheel="handleWheel">
         <div class="relative shadow-2xl transition-all duration-300"
           :class="isPreviewMode ? 'w-full h-full flex items-center justify-center' : 'w-full max-w-4xl'"
           :style="!isPreviewMode ? 'aspect-ratio: 16/9;' : ''">
@@ -427,11 +442,16 @@ const handleExport = async (format: ExportFormat) => {
             <div class="transform" :style="isPreviewMode 
               ? `transform: scale(${previewScale}); transform-origin: center center;` 
               : 'zoom: 0.8; transform-origin: center center;'">
-              <SlidePreview :key="activeSlide.id" :slide="activeSlide" :scale="1" />
+              <SlidePreview 
+                :key="activeSlide.id" 
+                :slide="activeSlide" 
+                :scale="1"
+                :current-page="activeSlideIndex + 1"
+                :total-pages="store.slides.length" />
             </div>
           </template>
           <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-            沒有選中的幻燈片
+            {{ t('editor.no_slide_selected') }}
           </div>
         </div>
 
@@ -468,7 +488,7 @@ const handleExport = async (format: ExportFormat) => {
             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded h-32 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             :value="activeSlide.contentPoints.join('\n')"
             @input="updateSlideContentPoints(($event.target as HTMLTextAreaElement).value)"
-            placeholder="Bullet points..." />
+            :placeholder="t('editor.bullet_points_placeholder')" />
         </div>
 
         <!-- Visual Editor -->
@@ -497,14 +517,14 @@ const handleExport = async (format: ExportFormat) => {
             <button v-if="activeSlide" @click="handleGenerateVideo(activeSlide)"
               class="flex items-center justify-center gap-2 bg-pink-600 text-white py-2 px-3 rounded hover:bg-pink-700 text-sm shadow-sm">
               <Video :size="16" />
-              Veo Video
+              {{ t('editor.veo_video') }}
             </button>
           </div>
         </div>
 
         <!-- Speaker Notes -->
         <div class="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-800">
-          <h3 class="font-semibold text-gray-700 dark:text-gray-200 text-sm">Speaker Notes</h3>
+          <h3 class="font-semibold text-gray-700 dark:text-gray-200 text-sm">{{ t('editor.speaker_notes') }}</h3>
           <textarea v-if="activeSlide"
             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded h-24 text-sm bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-yellow-100"
             :value="activeSlide.speakerNotes"

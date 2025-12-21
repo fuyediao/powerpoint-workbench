@@ -2,12 +2,19 @@
 import { computed } from 'vue'
 import { type SlideData } from '@/types'
 import { Image as ImageIcon } from 'lucide-vue-next'
+import { useI18n } from '@/composables/useI18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   slide: SlideData
   scale?: number
+  currentPage?: number
+  totalPages?: number
 }>(), {
-  scale: 1
+  scale: 1,
+  currentPage: 0,
+  totalPages: 0
 })
 
 const styleObj = computed(() => ({
@@ -36,7 +43,7 @@ const styleObj = computed(() => ({
     >
       <div class="text-gray-400 flex flex-col items-center">
         <ImageIcon :size="64" />
-        <p class="mt-2 text-xl">No Visual Generated</p>
+        <p class="mt-2 text-xl">{{ t('editor.no_visual_generated') }}</p>
       </div>
     </div>
 
@@ -81,6 +88,14 @@ const styleObj = computed(() => ({
           <p>{{ point }}</p>
         </div>
       </div>
+    </div>
+
+    <!-- Page Number Indicator -->
+    <div
+      v-if="props.currentPage > 0 && props.totalPages > 0"
+      class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-black/50 text-white px-4 py-2 rounded-full text-sm font-medium backdrop-blur-sm"
+    >
+      {{ props.currentPage }} / {{ props.totalPages }}
     </div>
   </div>
 </template>
