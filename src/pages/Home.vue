@@ -35,6 +35,11 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
+  // 當返回首頁時，如果有舊的投影片數據，清除它們（但保留配置）
+  // 這樣可以確保開始新專案時不會顯示舊專案的內容
+  if (store.slides.length > 0) {
+    store.resetProject()
+  }
 })
 
 onUnmounted(() => {
@@ -50,6 +55,11 @@ const handleStart = () => {
   if (store.config.provider === AiProvider.GOOGLE && !store.config.apiKey) {
     isSettingsOpen.value = true
     return
+  }
+
+  // 開始新專案前，確保清除舊的投影片數據
+  if (store.slides.length > 0) {
+    store.resetProject()
   }
 
   router.push('/editor')

@@ -54,7 +54,9 @@ onMounted(async () => {
     const hasFiles = store.uploadedFiles.length > 0
     
     if (!hasText && !hasFiles) {
-      // 既沒有文本也沒有文件，返回首頁
+      // 既沒有文本也沒有文件，清除舊數據並返回首頁
+      store.resetProject()
+      router.push('/')
       return
     }
     
@@ -159,6 +161,12 @@ const handleGenerateVideo = async (slide: SlideData) => {
     store.updateSlide(slide.id, { status: SlideStatus.ERROR })
     alert('Veo generation failed')
   }
+}
+
+const handleBackHome = () => {
+  // 返回首頁時清除舊專案數據，但保留 API Key 和 Provider 配置
+  store.resetProject()
+  router.push('/')
 }
 
 const handleGenerateAllImages = () => {
@@ -341,7 +349,7 @@ const handleExport = async (format: ExportFormat) => {
       <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ t('status.no_slides') }}</h2>
       <p class="text-gray-600 dark:text-gray-400">{{ t('status.no_slides_desc') }}</p>
     </div>
-    <button @click="router.push('/')"
+    <button @click="handleBackHome"
       class="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-base font-medium shadow-md transition-colors">
       <Home :size="20" />
       {{ t('btn.back_home') }}

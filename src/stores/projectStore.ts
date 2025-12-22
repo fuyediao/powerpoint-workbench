@@ -61,6 +61,43 @@ export const useProjectStore = defineStore('project', () => {
     uploadedFiles.value = []
   }
 
+  /**
+   * 重置專案：清除所有投影片數據，但保留配置（API Key、Provider 等）
+   * 用於開始新專案時清除舊專案數據
+   */
+  function resetProject() {
+    slides.value = []
+    // 保留配置中的 API Key 和 Provider 設置，只清除內容相關的配置
+    config.value = {
+      ...config.value,
+      sourceText: '',
+      pageCount: 10,
+      style: SlideStyle.CONCISE,
+      customStylePrompt: undefined
+    }
+    uploadedFiles.value = []
+  }
+
+  /**
+   * 完全重置：清除所有數據，包括配置
+   * 用於完全重新開始
+   */
+  function resetAll() {
+    slides.value = []
+    config.value = {
+      sourceText: '',
+      pageCount: 10,
+      style: SlideStyle.CONCISE,
+      provider: AiProvider.GOOGLE,
+      apiKey: '',
+      localEndpoint: 'http://localhost:11434',
+      comfyEndpoint: 'http://localhost:8188',
+      ollamaModel: '',
+      comfyWorkflow: ''
+    }
+    uploadedFiles.value = []
+  }
+
   return {
     config,
     slides,
@@ -71,6 +108,8 @@ export const useProjectStore = defineStore('project', () => {
     updateSlide,
     addUploadedFile,
     removeUploadedFile,
-    clearUploadedFiles
+    clearUploadedFiles,
+    resetProject,
+    resetAll
   }
 })
