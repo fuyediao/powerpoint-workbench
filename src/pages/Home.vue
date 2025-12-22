@@ -10,11 +10,13 @@ import SettingsModal from '@/components/SettingsModal.vue'
 import { Settings, FileText, Upload, Globe, Palette, Moon, Sun, X, ChevronDown, Check, Maximize2 } from 'lucide-vue-next'
 import type { UploadedFile } from '@/stores/projectStore'
 import TextEditorModal from '@/components/TextEditorModal.vue'
+import { UnitedStatesFlag, ChinaFlag, TaiwanFlag } from '@/flag/FlagIcons.vue'
+import { h } from 'vue'
 
 const router = useRouter()
 const store = useProjectStore()
 const { t, lang, setLang } = useI18n()
-const { theme, toggleTheme } = useTheme()
+const { theme, themeMode, toggleTheme } = useTheme()
 
 const isSettingsOpen = ref(false)
 const isLanguageOpen = ref(false)
@@ -134,6 +136,31 @@ const formatFileSize = (bytes: number): string => {
 const handleTextUpdate = (content: string) => {
   store.updateConfig({ sourceText: content })
 }
+
+// 根據語言代碼獲取對應的國旗組件
+const getFlagComponent = (langCode: string) => {
+  switch (langCode) {
+    case 'en':
+      return h(UnitedStatesFlag, { size: 16 })
+    case 'zh-CN':
+      return h(ChinaFlag, { size: 16 })
+    case 'zh-TW':
+      return h(TaiwanFlag, { size: 16 })
+    default:
+      return h(Globe, { size: 16 })
+  }
+}
+
+// 獲取主題切換按鈕的標籤
+const getThemeLabel = () => {
+  if (themeMode.value === 'system') {
+    return t.value('theme.system')
+  } else if (themeMode.value === 'dark') {
+    return t.value('theme.switch_to_light')
+  } else {
+    return t.value('theme.switch_to_dark')
+  }
+}
 </script>
 
 <template>
@@ -172,8 +199,9 @@ const handleTextUpdate = (content: string) => {
                   ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
               ]">
-              <Globe :size="16"
-                :class="lang === language.code ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'" />
+              <div class="shrink-0 w-4 h-4 flex items-center justify-center">
+                <component :is="getFlagComponent(language.code)" />
+              </div>
               <span>{{ language.label }}</span>
               <span v-if="lang === language.code" class="ml-auto text-indigo-600 dark:text-indigo-400">✓</span>
             </button>
@@ -182,7 +210,8 @@ const handleTextUpdate = (content: string) => {
 
         <!-- Theme Toggle -->
         <button @click.prevent.stop="toggleTheme()" type="button"
-          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          :aria-label="getThemeLabel()"
+          :title="getThemeLabel()"
           class="p-2.5 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full shadow-sm transition-all duration-300 group">
           <Sun v-if="theme === 'dark'" :size="18" class="transition-transform duration-300 group-hover:rotate-180" />
           <Moon v-else :size="18" class="transition-transform duration-300 group-hover:rotate-12" />

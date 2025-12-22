@@ -111,5 +111,8 @@
     "style.detailed": "詳細展示型 (閱讀材料)",
     "veo.desc": "為目前頁面產生影片",
     "veo.prompt": "視訊提示字",
-    "veo.title": "Veo 影片生成"
+    "veo.title": "Veo 影片生成",
+    "theme.system": "跟隨系統主題",
+    "theme.switch_to_light": "切換到淺色模式",
+    "theme.switch_to_dark": "切換到深色模式"
 }

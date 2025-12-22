@@ -13,7 +13,7 @@
     "lint:style:fix": "stylelint \"**/*.{css,vue}\" --fix",
     "postinstall": "electron-builder install-app-deps || true",
     "rebuild": "@electron/rebuild",
-    "electron:dev": "node scripts/build-electron.js && concurrently \"vite\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\" --kill-others",
+    "electron:dev": "node scripts/check-port.js 5173 && node scripts/build-electron.js && concurrently \"vite\" \"wait-on http://localhost:5173 -t 60000 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\" --kill-others --raw",
     "electron:build": "npm run electron:build:electron && vite build",
     "electron:build:electron": "node scripts/build-electron.js",
     "electron:pack": "npm run electron:build && electron-builder",
@@ -30,7 +30,8 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "public/icon/favicon.ico"
     ],
     "extraFiles": [
       {
@@ -45,20 +46,20 @@
       "target": [
         "nsis"
       ],
-      "icon": "assets/icon.ico"
+      "icon": "public/icon/favicon.ico"
     },
     "mac": {
       "target": [
         "dmg"
       ],
-      "icon": "assets/icon.icns",
+      "icon": "public/icon/favicon.ico",
       "category": "public.app-category.productivity"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
-      "icon": "assets/icon.png",
+      "icon": "public/icon/favicon.ico",
       "category": "Office"
     },
     "nsis": {

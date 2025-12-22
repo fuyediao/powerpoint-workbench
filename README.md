@@ -45,10 +45,11 @@
 ### 🌐 多語言支持
 - **完整的多語言覆蓋**: 所有 UI 元素均已支持多語言
 - **支持的語言**:
-  - 英文（English）
-  - 簡體中文（Simplified Chinese）
-  - 繁體中文（Traditional Chinese）
+  - 英文（English）🇺🇸
+  - 簡體中文（Simplified Chinese）🇨🇳
+  - 繁體中文（Traditional Chinese）🇹🇼
 - **動態語言切換**: 實時切換語言，無需重啟應用
+- **國旗圖標**: 語言選擇器顯示對應的國旗圖標，提供更直觀的視覺識別
 
 ### 🎯 進階功能
 - **深色模式**: 完整的深色主題支持
@@ -227,6 +228,8 @@ powerpoint-workbench/
 │   │       ├── en.json          # 英文翻譯
 │   │       ├── zh-CN.json       # 簡體中文翻譯
 │   │       └── zh-TW.json       # 繁體中文翻譯
+│   ├── flag/                     # 國旗圖標組件
+│   │   └── FlagIcons.vue       # 國旗圖標庫（200+ 個國家/地區）
 │   ├── pages/                    # 頁面組件
 │   │   ├── Editor.vue           # 編輯器主頁面
 │   │   └── Home.vue             # 首頁
@@ -237,6 +240,8 @@ powerpoint-workbench/
 │   │   ├── exportService.ts     # 導出服務
 │   │   ├── geminiService.ts     # Gemini API 服務
 │   │   └── localAiService.ts    # 本地 AI 服務
+│   ├── utils/                    # 工具函數
+│   │   └── ipChecker.ts         # IP 檢測工具
 │   ├── stores/                   # Pinia 狀態管理
 │   │   └── projectStore.ts      # 項目狀態存儲
 │   ├── types/                    # TypeScript 類型定義
@@ -282,7 +287,9 @@ powerpoint-workbench/
   - **`databaseService.ts`**: 數據庫服務封裝，支持 Electron 和 Web 模式
 - **`src/stores/`**: Pinia 狀態管理
 - **`src/i18n/`**: 國際化配置和翻譯文件
+- **`src/flag/`**: 國旗圖標組件庫，包含 200+ 個國家/地區的國旗圖標
 - **`src/types/`**: TypeScript 類型定義
+- **`src/utils/`**: 工具函數（如 IP 檢測等）
 - **`dist-electron/`**: Electron 構建輸出目錄
 - **`scripts/`**: 構建和工具腳本
 
@@ -450,6 +457,19 @@ electron-builder 配置在 `package.json` 的 `build` 字段中：
 - 確保所有依賴已安裝：`npm install`
 - 檢查 Node.js 版本（建議 >= 18.0.0）
 - 檢查是否有 TypeScript 類型錯誤
+- 檢查構建腳本輸出是否有錯誤信息
+
+**端口被佔用**：
+- 如果提示端口 5173 已被佔用，可以：
+  - **Windows**: 使用 `netstat -ano | findstr :5173` 查找進程，然後使用 `taskkill /PID <PID> /F` 終止
+  - **macOS/Linux**: 使用 `lsof -ti:5173 | xargs kill -9` 終止佔用端口的進程
+- 或者修改 `vite.config.ts` 使用其他端口
+
+**開發模式啟動失敗**：
+- 檢查是否有其他 Vite 實例正在運行
+- 確保 `dist-electron/` 目錄權限正確
+- 查看終端輸出的詳細錯誤信息
+- 構建腳本現在會自動檢查端口並提供清晰的錯誤提示
 
 **打包失敗**：
 - 確保已先運行 `npm run electron:build`
@@ -705,6 +725,7 @@ toggleTheme()
 - ✅ 設置面板
 - ✅ 導出和生成功能
 - ✅ 錯誤提示和狀態信息
+- ✅ 語言選擇器（帶國旗圖標）
 
 ### 開發工具
 

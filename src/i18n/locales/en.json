@@ -111,5 +111,8 @@
   "btn.back_home": "Back to Home",
   "veo.title": "Veo Video Generation",
   "veo.desc": "Generate a video for this slide",
-  "veo.prompt": "Video Prompt"
+  "veo.prompt": "Video Prompt",
+  "theme.system": "Follow System Theme",
+  "theme.switch_to_light": "Switch to Light Mode",
+  "theme.switch_to_dark": "Switch to Dark Mode"
 }

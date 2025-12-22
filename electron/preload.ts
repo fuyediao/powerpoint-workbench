@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getConfig: (key: string) => ipcRenderer.invoke('db:get-config', key),
     deleteConfig: (key: string) => ipcRenderer.invoke('db:delete-config', key),
     getAllConfig: () => ipcRenderer.invoke('db:get-all-config')
+  },
+  // 應用 API
+  app: {
+    getLocale: () => ipcRenderer.invoke('app:get-locale')
   }
 })
 

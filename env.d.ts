@@ -24,5 +24,8 @@ interface Window {
       deleteConfig: (key: string) => Promise<{ success: boolean; error?: string }>;
       getAllConfig: () => Promise<{ success: boolean; config: Record<string, string>; error?: string }>;
     };
+    app?: {
+      getLocale: () => Promise<string>;
+    };
   };
 }
