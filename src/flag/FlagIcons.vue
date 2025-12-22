@@ -7078,4 +7078,9 @@ export const ZimbabweFlag = (propsIn: FlagProps = {}) => {
     </svg>`
   });
 }
+
+// Vue 組件需要默認導出
+export default {
+  name: 'FlagIcons'
+}
 </script>

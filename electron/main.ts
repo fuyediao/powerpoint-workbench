@@ -35,24 +35,26 @@ const createWindow = (): void => {
   // 判斷是否為開發模式
   const isDev = !!VITE_DEV_SERVER_URL
   
-  // 設置應用圖標
-  const iconPath = path.join(process.env.APP_ROOT || __dirname, 'public', 'icon', 'favicon.ico')
+  // 設置應用圖標，嘗試多個可能的路徑
+  const rootPath = process.env.APP_ROOT || path.join(__dirname, '..')
+  const possibleIconPaths = [
+    path.join(rootPath, 'public', 'icon', 'favicon.ico'),
+    path.join(rootPath, 'dist', 'public', 'icon', 'favicon.ico'),
+    path.join(__dirname, '..', 'public', 'icon', 'favicon.ico'),
+    path.join(__dirname, '..', '..', 'public', 'icon', 'favicon.ico')
+  ]
+  
   let appIcon: nativeImage | undefined
-  try {
-    appIcon = nativeImage.createFromPath(iconPath)
-    if (appIcon.isEmpty()) {
-      appIcon = undefined
-    }
-  } catch {
-    // 如果圖標加載失敗，嘗試其他路徑
+  for (const iconPath of possibleIconPaths) {
     try {
-      const altIconPath = path.join(__dirname, '..', 'public', 'icon', 'favicon.ico')
-      appIcon = nativeImage.createFromPath(altIconPath)
-      if (appIcon.isEmpty()) {
-        appIcon = undefined
+      const testIcon = nativeImage.createFromPath(iconPath)
+      if (!testIcon.isEmpty()) {
+        appIcon = testIcon
+        break
       }
     } catch {
-      appIcon = undefined
+      // 繼續嘗試下一個路徑
+      continue
     }
   }
   
