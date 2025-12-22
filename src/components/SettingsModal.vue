@@ -137,9 +137,23 @@ const checkIp = async () => {
         store.config.proxyEndpoint
       )
       const apiOkText = t.value('settings.apiAccessOk')
-      ipInfo.value.apiTest = apiTest.success ? apiOkText : `✗ ${apiTest.message}`
+      const ipLabel = t.value('settings.apiIpLabel')
+      
+      // 處理消息翻譯
+      let translatedMessage = apiTest.message
+      if (apiTest.message === 'API_ACCESS_OK') {
+        translatedMessage = apiOkText
+      } else if (apiTest.message.startsWith('LOCATION_ERROR:')) {
+        const errorMsg = apiTest.message.replace('LOCATION_ERROR:', '')
+        translatedMessage = t.value('settings.locationError').replace('{message}', errorMsg)
+      } else if (apiTest.message.startsWith('API_ERROR:')) {
+        const errorMsg = apiTest.message.replace('API_ERROR:', '')
+        translatedMessage = t.value('settings.apiError').replace('{message}', errorMsg)
+      }
+      
+      ipInfo.value.apiTest = apiTest.success ? translatedMessage : `✗ ${translatedMessage}`
       if (apiTest.ipInfo) {
-        ipInfo.value.apiTest += ` | IP: ${apiTest.ipInfo.ip}${apiTest.ipInfo.country ? ' (' + apiTest.ipInfo.country + ')' : ''}`
+        ipInfo.value.apiTest += ` | ${ipLabel} ${apiTest.ipInfo.ip}${apiTest.ipInfo.country ? ' (' + apiTest.ipInfo.country + ')' : ''}`
       }
     }
   } catch (error) {

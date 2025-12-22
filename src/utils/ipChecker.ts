@@ -139,7 +139,7 @@ export async function checkGeminiApiAccess(
     if (response.ok) {
       return {
         success: true,
-        message: 'API 訪問正常',
+         message: 'API_ACCESS_OK', // 將在組件中翻譯
       }
     } else if (data.error?.message?.includes('location') || data.error?.message?.includes('region')) {
       // 獲取 IP 信息
@@ -149,13 +149,13 @@ export async function checkGeminiApiAccess(
 
       return {
         success: false,
-        message: `地區限制錯誤：${data.error.message}`,
+        message: `LOCATION_ERROR:${data.error.message}`, // 將在組件中翻譯
         ipInfo,
       }
     } else {
       return {
         success: false,
-        message: `API 錯誤：${data.error?.message || 'Unknown error'}`,
+        message: `API_ERROR:${data.error?.message || 'Unknown error'}`, // 將在組件中翻譯
       }
     }
   } catch (error) {
