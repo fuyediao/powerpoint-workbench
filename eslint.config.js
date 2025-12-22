@@ -9,7 +9,16 @@ export default tseslint.config(
   },
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/legacy-react/**'],
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/legacy-react/**', '**/dist-electron/**'],
+  },
+  {
+    name: 'app/scripts',
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+      },
+    },
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

@@ -1,6 +1,11 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { type ProjectConfig, type SlideData, SlideStyle, AiProvider } from '@/types'
+import { 
+  saveConfigToDatabase, 
+  getAllConfigFromDatabase,
+  CONFIG_KEYS 
+} from '@/services/databaseService'
 
 export interface UploadedFile {
   id: string
@@ -17,6 +22,8 @@ export const useProjectStore = defineStore('project', () => {
     style: SlideStyle.CONCISE,
     provider: AiProvider.GOOGLE,
     apiKey: '',
+    proxyEndpoint: '',
+    useProxy: false,
     localEndpoint: 'http://localhost:11434',
     comfyEndpoint: 'http://localhost:8188',
     ollamaModel: '',
@@ -30,8 +37,68 @@ export const useProjectStore = defineStore('project', () => {
     config.value = newConfig
   }
 
-  function updateConfig(partialConfig: Partial<ProjectConfig>) {
+  async function updateConfig(partialConfig: Partial<ProjectConfig>) {
     config.value = { ...config.value, ...partialConfig }
+    
+    // 同步保存到數據庫
+    if (partialConfig.apiKey !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.API_KEY, partialConfig.apiKey)
+    }
+    if (partialConfig.proxyEndpoint !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.PROXY_ENDPOINT, partialConfig.proxyEndpoint)
+    }
+    if (partialConfig.useProxy !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.USE_PROXY, String(partialConfig.useProxy))
+    }
+    if (partialConfig.localEndpoint !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.LOCAL_ENDPOINT, partialConfig.localEndpoint)
+    }
+    if (partialConfig.comfyEndpoint !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.COMFY_ENDPOINT, partialConfig.comfyEndpoint)
+    }
+    if (partialConfig.ollamaModel !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.OLLAMA_MODEL, partialConfig.ollamaModel)
+    }
+    if (partialConfig.comfyWorkflow !== undefined) {
+      await saveConfigToDatabase(CONFIG_KEYS.COMFY_WORKFLOW, partialConfig.comfyWorkflow)
+    }
+    if (partialConfig.provider !== undefined) {
+      await saveConfigToDatabase('provider', partialConfig.provider)
+    }
+  }
+
+  // 從數據庫加載配置
+  async function loadConfigFromDatabase() {
+    try {
+      const allConfig = await getAllConfigFromDatabase()
+      
+      if (allConfig[CONFIG_KEYS.API_KEY]) {
+        config.value.apiKey = allConfig[CONFIG_KEYS.API_KEY]
+      }
+      if (allConfig[CONFIG_KEYS.PROXY_ENDPOINT]) {
+        config.value.proxyEndpoint = allConfig[CONFIG_KEYS.PROXY_ENDPOINT]
+      }
+      if (allConfig[CONFIG_KEYS.USE_PROXY]) {
+        config.value.useProxy = allConfig[CONFIG_KEYS.USE_PROXY] === 'true'
+      }
+      if (allConfig[CONFIG_KEYS.LOCAL_ENDPOINT]) {
+        config.value.localEndpoint = allConfig[CONFIG_KEYS.LOCAL_ENDPOINT]
+      }
+      if (allConfig[CONFIG_KEYS.COMFY_ENDPOINT]) {
+        config.value.comfyEndpoint = allConfig[CONFIG_KEYS.COMFY_ENDPOINT]
+      }
+      if (allConfig[CONFIG_KEYS.OLLAMA_MODEL]) {
+        config.value.ollamaModel = allConfig[CONFIG_KEYS.OLLAMA_MODEL]
+      }
+      if (allConfig[CONFIG_KEYS.COMFY_WORKFLOW]) {
+        config.value.comfyWorkflow = allConfig[CONFIG_KEYS.COMFY_WORKFLOW]
+      }
+      if (allConfig.provider) {
+        config.value.provider = allConfig.provider as AiProvider
+      }
+    } catch (error) {
+      console.error('Failed to load config from database:', error)
+    }
   }
 
   function setSlides(newSlides: SlideData[]) {
@@ -90,6 +157,8 @@ export const useProjectStore = defineStore('project', () => {
       style: SlideStyle.CONCISE,
       provider: AiProvider.GOOGLE,
       apiKey: '',
+      proxyEndpoint: '',
+      useProxy: false,
       localEndpoint: 'http://localhost:11434',
       comfyEndpoint: 'http://localhost:8188',
       ollamaModel: '',
@@ -97,6 +166,9 @@ export const useProjectStore = defineStore('project', () => {
     }
     uploadedFiles.value = []
   }
+
+  // 初始化時加載配置
+  loadConfigFromDatabase()
 
   return {
     config,
@@ -110,6 +182,7 @@ export const useProjectStore = defineStore('project', () => {
     removeUploadedFile,
     clearUploadedFiles,
     resetProject,
-    resetAll
+    resetAll,
+    loadConfigFromDatabase
   }
 })

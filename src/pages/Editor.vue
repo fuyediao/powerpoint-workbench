@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/projectStore'
 import { useI18n } from '@/composables/useI18n'
 import { generateOutline, generateFullSlideImage, generateVeoVideo } from '@/services/geminiService'
+import { generateOutlineWithProxy, generateFullSlideImageWithProxy } from '@/services/geminiProxyService'
 import { AiProvider, type SlideData, SlideStatus } from '@/types'
 import SlidePreview from '@/components/SlidePreview.vue'
 import ExportModal from '@/components/ExportModal.vue'
@@ -66,6 +67,9 @@ onMounted(async () => {
       if (store.config.provider === AiProvider.GOOGLE && store.config.apiKey) {
         let newSlides: SlideData[]
         
+        // 檢查是否使用代理
+        const useProxy = store.config.useProxy && store.config.proxyEndpoint
+        
         // 優先使用文件，如果有文件就全部用文件（包括文本文件）
         // 如果只有文本沒有文件，則使用文本
         if (hasFiles) {
@@ -80,22 +84,44 @@ onMounted(async () => {
             files.push(textFile)
           }
           
-          newSlides = await generateOutline(
-            store.config.apiKey,
-            files, // 傳遞文件數組，所有內容都由 Gemini 解析
-            store.config.pageCount,
-            store.config.style,
-            store.config.customStylePrompt
-          )
+          if (useProxy) {
+            newSlides = await generateOutlineWithProxy(
+              store.config.proxyEndpoint!,
+              store.config.apiKey,
+              files,
+              store.config.pageCount,
+              store.config.style,
+              store.config.customStylePrompt
+            )
+          } else {
+            newSlides = await generateOutline(
+              store.config.apiKey,
+              files, // 傳遞文件數組，所有內容都由 Gemini 解析
+              store.config.pageCount,
+              store.config.style,
+              store.config.customStylePrompt
+            )
+          }
         } else if (hasText) {
           // 如果只有文本，直接傳遞文本字符串
-          newSlides = await generateOutline(
-            store.config.apiKey,
-            store.config.sourceText, // 傳遞文本字符串
-            store.config.pageCount,
-            store.config.style,
-            store.config.customStylePrompt
-          )
+          if (useProxy) {
+            newSlides = await generateOutlineWithProxy(
+              store.config.proxyEndpoint!,
+              store.config.apiKey,
+              store.config.sourceText,
+              store.config.pageCount,
+              store.config.style,
+              store.config.customStylePrompt
+            )
+          } else {
+            newSlides = await generateOutline(
+              store.config.apiKey,
+              store.config.sourceText, // 傳遞文本字符串
+              store.config.pageCount,
+              store.config.style,
+              store.config.customStylePrompt
+            )
+          }
         } else {
           throw new Error('No content provided')
         }
@@ -104,13 +130,68 @@ onMounted(async () => {
       } else {
         // Mock local or fallback
         if (!store.config.apiKey) {
-          alert('Please configure API Key in settings first or switch provider.')
+          alert(t.value('error.api_key_configure'))
           router.push('/')
         }
       }
     } catch (e) {
-      console.error(e)
-      alert('Failed to generate outline. Check console.')
+      console.error('Outline generation error:', e)
+      
+      // 處理特定的 API 錯誤
+      let errorMessage = t.value('error.generation_failed')
+      
+      // 嘗試從錯誤對象中提取錯誤信息
+      let errorStr = ''
+      if (e instanceof Error) {
+        errorStr = e.message || String(e)
+      } else if (typeof e === 'object' && e !== null) {
+        // 嘗試從 API 錯誤對象中提取信息
+        const errorObj = e as { error?: { message?: string; code?: number; status?: string } }
+        if (errorObj.error?.message) {
+          errorStr = errorObj.error.message
+        } else {
+          errorStr = JSON.stringify(e)
+        }
+      } else {
+        errorStr = String(e)
+      }
+      
+      // 檢查是否為地區不支持錯誤
+      if (errorStr.includes('User location is not supported') || 
+          errorStr.includes('FAILED_PRECONDITION') ||
+          errorStr.includes('location is not supported') ||
+          errorStr.includes('not supported for the API use')) {
+        // 提供更詳細的解決方案
+        errorMessage = t.value('error.location_not_supported_vpn')
+      } else if (errorStr.includes('API key') || errorStr.includes('401') || errorStr.includes('403') || errorStr.includes('INVALID_ARGUMENT')) {
+        errorMessage = t.value('error.invalid_api_key')
+      } else if (errorStr.includes('429') || errorStr.includes('quota') || errorStr.includes('RESOURCE_EXHAUSTED')) {
+        errorMessage = t.value('error.quota_exceeded')
+      } else if (errorStr.length > 0) {
+        // 顯示具體錯誤信息（限制長度）
+        const shortError = errorStr.length > 150 ? errorStr.substring(0, 150) + '...' : errorStr
+        errorMessage = `${t.value('error.generation_failed')}：${shortError}`
+      }
+      
+      // 使用更友好的方式顯示錯誤（支持多行）
+      if (errorMessage.includes('\n')) {
+        // 如果是多行錯誤，使用 confirm 顯示，並提供複製錯誤信息的選項
+        const userChoice = confirm(errorMessage + '\n\n' + t.value('error.confirm_error_message'))
+        if (userChoice) {
+          store.resetProject()
+          router.push('/')
+        } else {
+          // 用戶選擇查看控制台，不自動返回
+          console.error('完整錯誤信息：', e)
+        }
+      } else {
+        alert(errorMessage)
+        // 如果生成失敗，返回首頁
+        setTimeout(() => {
+          store.resetProject()
+          router.push('/')
+        }, 1000)
+      }
     } finally {
       isGenerating.value = false
     }
@@ -119,31 +200,40 @@ onMounted(async () => {
 
 const handleGenerateImage = async (slide: SlideData) => {
   if (!store.config.apiKey) {
-    alert('API Key Missing')
+    alert(t.value('error.api_key_missing'))
     return
   }
 
   store.updateSlide(slide.id, { status: SlideStatus.GENERATING })
   try {
     // 使用 nano banana 生成整頁圖片（包含標題、內容等所有元素）
-    const b64 = await generateFullSlideImage(
-      store.config.apiKey,
-      slide,
-      store.config.customStylePrompt,
-      '2K' // High quality
-    )
+    const useProxy = store.config.useProxy && store.config.proxyEndpoint
+    const b64 = useProxy
+      ? await generateFullSlideImageWithProxy(
+          store.config.proxyEndpoint!,
+          store.config.apiKey,
+          slide,
+          store.config.customStylePrompt,
+          '2K'
+        )
+      : await generateFullSlideImage(
+          store.config.apiKey,
+          slide,
+          store.config.customStylePrompt,
+          '2K' // High quality
+        )
     // 標記為整頁圖片，這樣預覽組件就不會疊加文字了
     store.updateSlide(slide.id, { imageUrl: b64, status: SlideStatus.DONE, isFullSlideImage: true })
   } catch (e) {
     console.error(e)
     store.updateSlide(slide.id, { status: SlideStatus.ERROR })
-    alert('圖片生成失敗')
+    alert(t.value('error.image_generation_failed'))
   }
 }
 
 const handleGenerateVideo = async (slide: SlideData) => {
   if (!store.config.apiKey) {
-    alert('API Key Missing')
+    alert(t.value('error.api_key_missing'))
     return
   }
 
@@ -159,7 +249,7 @@ const handleGenerateVideo = async (slide: SlideData) => {
   } catch (e) {
     console.error(e)
     store.updateSlide(slide.id, { status: SlideStatus.ERROR })
-    alert('Veo generation failed')
+    alert(t.value('error.veo_generation_failed'))
   }
 }
 
@@ -171,12 +261,12 @@ const handleBackHome = () => {
 
 const handleGenerateAllImages = () => {
   if (!store.config.apiKey) {
-    alert('API Key Missing')
+    alert(t.value('error.api_key_missing'))
     return
   }
 
   if (slidesToGenerate.value.length === 0) {
-    alert('所有幻燈片都已經有圖片了')
+    alert(t.value('error.all_slides_have_images'))
     return
   }
 
@@ -328,7 +418,7 @@ const handleExport = async (format: ExportFormat) => {
     }
   } catch (error) {
     console.error('Export failed:', error)
-    alert('導出失敗，請檢查控制台')
+    alert(t.value('error.export_failed'))
   }
 }
 </script>
@@ -339,7 +429,7 @@ const handleExport = async (format: ExportFormat) => {
     class="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 flex-col transition-colors">
     <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 dark:border-indigo-400 mb-4"></div>
     <p class="text-xl font-medium text-gray-600 dark:text-gray-300 animate-pulse">{{ loadingMessage }}</p>
-    <p class="text-sm text-gray-400 mt-2">Using Gemini 3 Pro (Thinking Mode)</p>
+    <p class="text-sm text-gray-400 mt-2">{{ t('status.using_gemini') }}</p>
   </div>
 
   <!-- No Slides State -->

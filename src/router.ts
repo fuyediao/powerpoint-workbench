@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
+// 使用 Hash History，在 Electron 和 Web 環境中都工作良好
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [

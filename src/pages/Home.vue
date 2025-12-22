@@ -198,7 +198,7 @@ const handleTextUpdate = (content: string) => {
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full p-6 overflow-y-auto">
+    <main class="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full p-6 overflow-y-auto scrollbar-hidden">
       <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white mb-6 text-center leading-tight drop-shadow-sm">
         {{ t('home.welcome') }}
       </h1>
@@ -369,3 +369,15 @@ const handleTextUpdate = (content: string) => {
     </main>
   </div>
 </template>
+
+<style scoped>
+/* 隱藏滾動條但保留滾動功能 */
+.scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 和 Edge */
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+</style>

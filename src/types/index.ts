@@ -46,6 +46,8 @@ export interface ProjectConfig {
   customStylePrompt?: string;
   provider: AiProvider;
   apiKey?: string; // For Google
+  proxyEndpoint?: string; // Cloudflare Worker 代理端點（可選）
+  useProxy?: boolean; // 是否使用代理
   localEndpoint?: string; // For Ollama
   comfyEndpoint?: string; // For ComfyUI
   ollamaModel?: string; // Selected Ollama model

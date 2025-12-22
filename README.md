@@ -23,6 +23,7 @@
 - [項目結構](#項目結構)
 - [核心功能](#核心功能)
 - [開發指南](#開發指南)
+- [Electron 桌面應用](#electron-桌面應用)
 - [配置說明](#配置說明)
 - [API 整合](#api-整合)
 - [授權協議](#授權協議)
@@ -62,6 +63,12 @@
   - Word 和 PPT 文件需轉換為 PDF 後上傳
 - **智能導航**: 滾輪切換投影片，頁碼顯示
 
+### 🖥️ Electron 桌面應用
+- **跨平台支持**: Windows、macOS、Linux
+- **本地數據存儲**: 使用 SQLite 安全保存 API Key 和配置
+- **離線功能**: 支持本地 AI 服務（Ollama + ComfyUI）
+- **原生體驗**: 無需瀏覽器，獨立桌面應用
+
 ## 🏗️ 技術架構
 
 ### 前端框架
@@ -83,6 +90,11 @@
 - **本地 AI 支持**: Ollama（文本生成）和 ComfyUI（圖像生成）
 - **多模型支持**: 文本、圖像、視頻生成
 - **Search Grounding**: 實時搜索增強
+
+### 桌面應用
+- **Electron 33.0**: 跨平台桌面應用框架
+- **SQLite (sql.js)**: 本地數據庫存儲
+- **electron-builder**: 應用打包和分發
 
 ### 開發規範
 - **SOLID 原則**: 遵循面向對象設計原則
@@ -127,6 +139,8 @@ GEMINI_API_KEY=your_api_key_here
 
 4. **啟動開發服務器**
 
+**Web 應用模式**：
+
 **方式一：使用 npm 命令**
 ```bash
 npm run dev
@@ -140,20 +154,62 @@ dev.bat
 
 應用將在 `http://localhost:5173` 啟動（Vite 默認端口）
 
+**Electron 桌面應用模式**：
+```bash
+npm run electron:dev
+```
+
+這個命令會：
+1. 構建 Electron 主進程和預載入腳本
+2. 啟動 Vite 開發服務器（http://localhost:5173）
+3. 等待服務器就緒後啟動 Electron 應用
+
+**僅啟動 Electron**（需要先運行 `npm run dev`）：
+```bash
+npm run electron
+```
+
 5. **構建生產版本**
+
+**Web 應用**：
 ```bash
 npm run build
 ```
 
+**Electron 桌面應用**：
+```bash
+npm run electron:build
+```
+
+這會：
+1. 構建 Electron 主進程文件到 `dist-electron/`
+2. 構建 Vue 應用到 `dist/`
+
 6. **預覽生產版本**
+
+**Web 應用**：
 ```bash
 npm run preview
 ```
+
+**打包 Electron 應用**：
+```bash
+npm run electron:dist
+```
+
+這會創建可分發的安裝程序，輸出到 `dist-electron/` 目錄：
+- **Windows**: NSIS 安裝程序（.exe）
+- **macOS**: DMG 文件
+- **Linux**: AppImage 文件
 
 ## 📁 項目結構
 
 ```
 powerpoint-workbench/
+├── electron/                     # Electron 桌面應用
+│   ├── main.ts                  # Electron 主進程（窗口管理、應用生命週期）
+│   ├── preload.ts               # 預載入腳本（安全的 API 暴露）
+│   └── database.ts              # SQLite 數據庫操作
 ├── src/                          # 源代碼目錄
 │   ├── components/               # Vue 組件
 │   │   ├── ExportModal.vue      # 導出彈窗組件
@@ -177,6 +233,7 @@ powerpoint-workbench/
 │   ├── prompts/                  # AI 提示詞
 │   │   └── index.ts             # 提示詞配置
 │   ├── services/                 # 服務層
+│   │   ├── databaseService.ts   # 數據庫服務（Electron）
 │   │   ├── exportService.ts     # 導出服務
 │   │   ├── geminiService.ts     # Gemini API 服務
 │   │   └── localAiService.ts    # 本地 AI 服務
@@ -190,6 +247,12 @@ powerpoint-workbench/
 │   ├── main.ts                   # 應用入口
 │   ├── router.ts                 # 路由配置
 │   └── constants.ts              # 常量定義
+├── dist-electron/                # Electron 構建輸出
+│   ├── main.js                  # 構建後的主進程
+│   └── preload.js               # 構建後的預載入腳本
+├── dist/                         # Vue 應用的構建輸出
+├── scripts/                      # 構建腳本
+│   └── build-electron.js        # Electron 構建腳本
 ├── index.html                    # HTML 入口文件
 ├── vite.config.ts               # Vite 配置
 ├── tsconfig.json                # TypeScript 配置
@@ -208,13 +271,20 @@ powerpoint-workbench/
 
 ### 目錄說明
 
+- **`electron/`**: Electron 桌面應用相關文件
+  - **`main.ts`**: Electron 主進程，負責窗口管理和應用生命週期
+  - **`preload.ts`**: 預載入腳本，安全地暴露 Node.js API 給渲染進程
+  - **`database.ts`**: SQLite 數據庫操作，用於本地存儲配置
 - **`src/components/`**: 可復用的 Vue 組件
 - **`src/composables/`**: Vue 3 Composition API 組合式函數
 - **`src/pages/`**: 頁面級組件
 - **`src/services/`**: API 調用和業務邏輯
+  - **`databaseService.ts`**: 數據庫服務封裝，支持 Electron 和 Web 模式
 - **`src/stores/`**: Pinia 狀態管理
 - **`src/i18n/`**: 國際化配置和翻譯文件
 - **`src/types/`**: TypeScript 類型定義
+- **`dist-electron/`**: Electron 構建輸出目錄
+- **`scripts/`**: 構建和工具腳本
 
 ## 🔧 核心功能
 
@@ -289,6 +359,107 @@ for (const slide of slides) {
 - **useTheme**: 主題切換狀態（組合式函數）
 
 ## 💻 開發指南
+
+### Electron 桌面應用
+
+#### 開發模式
+
+**啟動開發環境**：
+```bash
+npm run electron:dev
+```
+
+這個命令會：
+1. 構建 Electron 主進程和預載入腳本
+2. 啟動 Vite 開發服務器（http://localhost:5173）
+3. 等待服務器就緒後啟動 Electron 應用
+
+**僅啟動 Electron**（需要先運行 `npm run dev`）：
+```bash
+npm run electron
+```
+
+#### 構建和打包
+
+**構建生產版本**：
+```bash
+npm run electron:build
+```
+
+這會：
+1. 構建 Electron 主進程文件到 `dist-electron/`
+2. 構建 Vue 應用到 `dist/`
+
+**打包可分發的應用程式**：
+```bash
+npm run electron:dist
+```
+
+這會創建可分發的安裝程序，輸出到 `dist-electron/` 目錄：
+- **Windows**: NSIS 安裝程序（.exe）
+- **macOS**: DMG 文件
+- **Linux**: AppImage 文件
+
+#### 配置說明
+
+**窗口配置**：
+
+窗口大小和行為在 `electron/main.ts` 中配置：
+- 默認大小：1400x900
+- 最小大小：1000x600
+- 標題欄樣式：macOS 使用 `hiddenInset`，其他平台使用默認
+- 菜單欄：自動隱藏（生產模式）
+- 開發者工具：開發模式啟用，生產模式禁用
+
+**構建配置**：
+
+electron-builder 配置在 `package.json` 的 `build` 字段中：
+- 應用 ID：`com.gemini.ppt.workbench`
+- 產品名稱：`Gemini PPT Workbench`
+- 輸出目錄：`dist-electron`
+
+**數據庫存儲**：
+
+- 數據庫類型：SQLite（使用 `sql.js`）
+- 數據庫位置：`app.getPath('userData')/app.db`
+  - Windows: `%APPDATA%\gemini-ppt-workbench\app.db`
+  - macOS: `~/Library/Application Support/gemini-ppt-workbench/app.db`
+  - Linux: `~/.config/gemini-ppt-workbench/app.db`
+- 存儲內容：API Key、代理配置、本地 AI 配置等
+
+#### 注意事項
+
+1. **開發模式**：Electron 會連接到 Vite 開發服務器，支持熱重載
+2. **生產模式**：Electron 會加載打包後的靜態文件
+3. **安全性**：
+   - 上下文隔離已啟用
+   - Node.js 集成已禁用（渲染進程）
+   - 使用預載入腳本安全地暴露 API
+   - 生產模式下禁用開發者工具和快捷鍵（Alt、Ctrl+Shift+I、F12）
+4. **網絡請求**：所有 API 調用（Gemini、本地 AI 服務）在 Electron 中都能正常工作
+5. **數據持久化**：配置會自動保存到本地 SQLite 數據庫
+
+#### 故障排除
+
+**Electron 窗口空白**：
+- 確保 Vite 開發服務器正在運行（開發模式）
+- 確保已運行 `npm run electron:build`（生產模式）
+- 檢查控制台是否有錯誤信息
+
+**構建失敗**：
+- 確保所有依賴已安裝：`npm install`
+- 檢查 Node.js 版本（建議 >= 18.0.0）
+- 檢查是否有 TypeScript 類型錯誤
+
+**打包失敗**：
+- 確保已先運行 `npm run electron:build`
+- 檢查 `package.json` 中的 `build` 配置是否正確
+- 檢查圖標文件是否存在（如果指定了自定義圖標）
+
+**數據庫問題**：
+- 檢查應用數據目錄權限
+- 確認 SQLite WASM 文件正確加載
+- 查看控制台錯誤信息
 
 ### 代碼規範
 
