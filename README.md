@@ -203,6 +203,35 @@ npm run electron:dist
 - **macOS**: DMG 文件
 - **Linux**: AppImage 文件
 
+### 發布到 GitHub Releases
+
+項目已配置 GitHub Actions 自動構建和發布流程。要發布新版本：
+
+1. **更新版本號**：在 `package.json` 中更新 `version` 字段（例如：`0.1.4`）
+
+2. **創建 Git 標籤**：
+   ```bash
+   git add .
+   git commit -m "chore: bump version to 0.1.4"
+   git tag v0.1.4
+   git push origin main
+   git push origin v0.1.4
+   ```
+
+3. **自動構建和發布**：推送標籤後，GitHub Actions 會自動：
+   - 在 Windows、macOS 和 Linux 上構建應用
+   - 創建 GitHub Release
+   - 上傳所有平台的安裝包
+
+4. **手動觸發**：也可以通過 GitHub Actions 頁面手動觸發構建
+
+發布的安裝包可以在 [GitHub Releases](https://github.com/YOUR_USERNAME/powerpoint-workbench/releases) 頁面下載。
+
+**注意**：
+- 標籤格式必須為 `v*`（例如：`v0.1.4`）
+- 發布會自動從 `CHANGELOG.md` 讀取更新內容
+- 如果需要代碼簽名，請在 GitHub Secrets 中配置證書
+
 ## 📁 項目結構
 
 ```
