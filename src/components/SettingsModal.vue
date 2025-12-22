@@ -242,7 +242,7 @@ onUnmounted(() => {
             />
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" v-html="t('settings.apiKeyHint')">
             </p>
-            <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+            <p v-if="store.config.apiKey && store.config.apiKey.trim()" class="text-xs text-green-600 dark:text-green-400 mt-1">
               {{ t('settings.apiKeySaved') }}
             </p>
           </div>
