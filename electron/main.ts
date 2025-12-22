@@ -273,11 +273,34 @@ app.on('activate', () => {
   }
 })
 
-// 應用準備就緒時創建窗口和托盤
-app.whenReady().then(() => {
-  createWindow()
-  createTray()
-})
+// 單實例鎖定：確保一次只能開啟一個應用實例
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  // 如果獲取鎖失敗，說明已經有另一個實例在運行
+  app.quit()
+} else {
+  // 監聽第二個實例啟動事件
+  app.on('second-instance', () => {
+    // 當用戶嘗試打開第二個實例時，將焦點切換到已運行的窗口
+    if (win) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.show()
+      win.focus()
+    } else {
+      // 如果窗口不存在，重新創建
+      createWindow()
+    }
+  })
+
+  // 應用準備就緒時創建窗口和托盤
+  app.whenReady().then(() => {
+    createWindow()
+    createTray()
+  })
+}
 
 // 應用退出時關閉數據庫和清理托盤
 app.on('will-quit', () => {

@@ -5,7 +5,7 @@ import { useProjectStore } from '@/stores/projectStore'
 import { AiProvider } from '@/types'
 import { useI18n } from '@/composables/useI18n'
 import { getOllamaModels, getComfyUIWorkflows, type OllamaModel, type ComfyUIWorkflow } from '@/services/localAiService'
-import { checkIpDirect, checkIpViaProxy, checkGeminiApiAccess } from '@/utils/ipChecker'
+import { checkIpDirect, checkGeminiApiAccess } from '@/utils/ipChecker'
 
 const props = defineProps<{
   isOpen: boolean

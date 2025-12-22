@@ -9,14 +9,6 @@ let initialized = false
 let mediaQuery: MediaQueryList | null = null
 let mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null
 
-// 獲取系統主題
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }
-  return 'light'
-}
-
 // 解析實際應用的主題
 const theme = computed<ResolvedTheme>(() => {
   if (themeMode.value === 'system') {
