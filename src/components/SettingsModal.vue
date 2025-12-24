@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { X, Settings, ChevronDown, Check, Cloud, Server, RefreshCw, Cpu, Workflow } from 'lucide-vue-next'
+import { X, Settings, ChevronDown, Check, Cloud, Server, RefreshCw, Cpu, Workflow, Globe } from 'lucide-vue-next'
 import { useProjectStore } from '@/stores/projectStore'
 import { AiProvider } from '@/types'
 import { useI18n } from '@/composables/useI18n'
 import { getOllamaModels, getComfyUIWorkflows, type OllamaModel, type ComfyUIWorkflow } from '@/services/localAiService'
+import { checkIpDirect, checkGeminiApiAccess } from '@/utils/ipChecker'
 
 const props = defineProps<{
   isOpen: boolean
@@ -30,6 +31,11 @@ const isLoadingOllama = ref(false)
 const isLoadingComfy = ref(false)
 const ollamaError = ref<string | null>(null)
 const comfyError = ref<string | null>(null)
+
+// IP 檢測相關
+const isCheckingIp = ref(false)
+const ipInfo = ref<{ direct?: string; proxy?: string; apiTest?: string }>({})
+const ipError = ref<string | null>(null)
 
 // Click outside to close dropdowns
 const handleClickOutside = (event: MouseEvent) => {
@@ -59,7 +65,7 @@ const detectOllamaModels = async () => {
       store.updateConfig({ ollamaModel: models[0].name })
     }
   } catch (error) {
-    ollamaError.value = error instanceof Error ? error.message : '無法連接到 Ollama 服務'
+    ollamaError.value = error instanceof Error ? error.message : t.value('settings.ollamaConnectError')
     console.error('Failed to fetch Ollama models:', error)
   } finally {
     isLoadingOllama.value = false
@@ -81,21 +87,26 @@ const detectComfyWorkflows = async () => {
       store.updateConfig({ comfyWorkflow: workflows[0].id })
     }
   } catch (error) {
-    comfyError.value = error instanceof Error ? error.message : '無法連接到 ComfyUI 服務'
+    comfyError.value = error instanceof Error ? error.message : t.value('settings.comfyConnectError')
     console.error('Failed to fetch ComfyUI workflows:', error)
   } finally {
     isLoadingComfy.value = false
   }
 }
 
-// 當模態框打開且選擇了本地 AI 時，自動檢測
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen && store.config.provider === AiProvider.LOCAL) {
-    if (store.config.localEndpoint && ollamaModels.value.length === 0) {
-      detectOllamaModels()
-    }
-    if (store.config.comfyEndpoint && comfyWorkflows.value.length === 0) {
-      detectComfyWorkflows()
+// 當模態框打開時，加載數據庫配置
+watch(() => props.isOpen, async (isOpen) => {
+  if (isOpen) {
+    // 從數據庫加載配置
+    await store.loadConfigFromDatabase()
+    
+    if (store.config.provider === AiProvider.LOCAL) {
+      if (store.config.localEndpoint && ollamaModels.value.length === 0) {
+        detectOllamaModels()
+      }
+      if (store.config.comfyEndpoint && comfyWorkflows.value.length === 0) {
+        detectComfyWorkflows()
+      }
     }
   }
 })
@@ -103,6 +114,55 @@ watch(() => props.isOpen, (isOpen) => {
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
 })
+
+// 檢測 IP 地址
+const checkIp = async () => {
+  isCheckingIp.value = true
+  ipError.value = null
+  ipInfo.value = {}
+
+  try {
+    // 檢測直接連接的 IP
+    const directIp = await checkIpDirect()
+    ipInfo.value.direct = directIp.ip
+    if (directIp.country) {
+      ipInfo.value.direct += ` (${directIp.country}${directIp.city ? ', ' + directIp.city : ''})`
+    }
+
+    // 如果有 API Key，測試 API 訪問
+    if (store.config.apiKey) {
+      const apiTest = await checkGeminiApiAccess(
+        store.config.apiKey,
+        store.config.useProxy || false,
+        store.config.proxyEndpoint
+      )
+      const apiOkText = t.value('settings.apiAccessOk')
+      const ipLabel = t.value('settings.apiIpLabel')
+      
+      // 處理消息翻譯
+      let translatedMessage = apiTest.message
+      if (apiTest.message === 'API_ACCESS_OK') {
+        translatedMessage = apiOkText
+      } else if (apiTest.message.startsWith('LOCATION_ERROR:')) {
+        const errorMsg = apiTest.message.replace('LOCATION_ERROR:', '')
+        translatedMessage = t.value('settings.locationError').replace('{message}', errorMsg)
+      } else if (apiTest.message.startsWith('API_ERROR:')) {
+        const errorMsg = apiTest.message.replace('API_ERROR:', '')
+        translatedMessage = t.value('settings.apiError').replace('{message}', errorMsg)
+      }
+      
+      ipInfo.value.apiTest = apiTest.success ? translatedMessage : `✗ ${translatedMessage}`
+      if (apiTest.ipInfo) {
+        ipInfo.value.apiTest += ` | ${ipLabel} ${apiTest.ipInfo.ip}${apiTest.ipInfo.country ? ' (' + apiTest.ipInfo.country + ')' : ''}`
+      }
+    }
+  } catch (error) {
+    ipError.value = error instanceof Error ? error.message : t.value('settings.ipCheckFailed')
+    console.error('IP check failed:', error)
+  } finally {
+    isCheckingIp.value = false
+  }
+}
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside)
@@ -136,7 +196,7 @@ onUnmounted(() => {
               <Cloud v-if="store.config.provider === AiProvider.GOOGLE" :size="18" class="text-indigo-600 dark:text-indigo-400" />
               <Server v-else :size="18" class="text-indigo-600 dark:text-indigo-400" />
               <span class="font-medium">
-                {{ store.config.provider === AiProvider.GOOGLE ? 'Google Gemini (Cloud)' : 'Local AI (Ollama + ComfyUI)' }}
+                {{ store.config.provider === AiProvider.GOOGLE ? t('settings.providerGoogle') : t('settings.providerLocal') }}
               </span>
             </div>
             <ChevronDown 
@@ -162,7 +222,7 @@ onUnmounted(() => {
               ]"
             >
               <Cloud :size="18" :class="store.config.provider === AiProvider.GOOGLE ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'" />
-              <span>Google Gemini (Cloud)</span>
+              <span>{{ t('settings.providerGoogle') }}</span>
               <Check v-if="store.config.provider === AiProvider.GOOGLE" :size="16" class="ml-auto text-indigo-600 dark:text-indigo-400" />
             </button>
             <button
@@ -176,7 +236,7 @@ onUnmounted(() => {
               ]"
             >
               <Server :size="18" :class="store.config.provider === AiProvider.LOCAL ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'" />
-              <span>Local AI (Ollama + ComfyUI)</span>
+              <span>{{ t('settings.providerLocal') }}</span>
               <Check v-if="store.config.provider === AiProvider.LOCAL" :size="16" class="ml-auto text-indigo-600 dark:text-indigo-400" />
             </button>
           </div>
@@ -194,9 +254,36 @@ onUnmounted(() => {
               placeholder="AIza..."
               class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
             />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Get your key from <a href="https://aistudio.google.com/" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">Google AI Studio</a>.
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" v-html="t('settings.apiKeyHint')">
             </p>
+            <p v-if="store.config.apiKey && store.config.apiKey.trim()" class="text-xs text-green-600 dark:text-green-400 mt-1">
+              {{ t('settings.apiKeySaved') }}
+            </p>
+          </div>
+
+          <!-- IP 檢測 -->
+          <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+            <div class="mt-3">
+              <button
+                @click="checkIp"
+                :disabled="isCheckingIp"
+                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                <Globe :size="16" :class="{ 'animate-spin': isCheckingIp }" />
+                {{ isCheckingIp ? t('settings.checkingIp') : t('settings.checkIp') }}
+              </button>
+              
+              <!-- IP 檢測結果 -->
+              <div v-if="ipInfo.direct || ipInfo.apiTest" class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-xs space-y-1">
+                <div v-if="ipInfo.direct" class="text-gray-700 dark:text-gray-300">
+                  <strong>{{ t('settings.directIp') }}</strong> {{ ipInfo.direct }}
+                </div>
+                <div v-if="ipInfo.apiTest" :class="ipInfo.apiTest.startsWith('✓') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                  <strong>{{ t('settings.apiTest') }}</strong> {{ ipInfo.apiTest }}
+                </div>
+              </div>
+              <p v-if="ipError" class="mt-2 text-xs text-red-500 dark:text-red-400">{{ ipError }}</p>
+            </div>
           </div>
         </template>
 
@@ -218,10 +305,10 @@ onUnmounted(() => {
                 @click="detectOllamaModels"
                 :disabled="isLoadingOllama"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors flex items-center gap-2"
-                title="檢測 Ollama 模型"
+                :title="t('settings.ollamaModel')"
               >
                 <RefreshCw :size="16" :class="{ 'animate-spin': isLoadingOllama }" />
-                檢測
+                {{ t('settings.detect') }}
               </button>
             </div>
           </div>
@@ -229,7 +316,7 @@ onUnmounted(() => {
           <!-- Ollama 模型選擇 -->
           <div class="relative" ref="ollamaModelDropdownRef">
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-              <Cpu :size="16" /> Ollama 模型
+              <Cpu :size="16" /> {{ t('settings.ollamaModel') }}
             </label>
             <button
               @click.prevent.stop="isOllamaModelOpen = !isOllamaModelOpen"
@@ -238,7 +325,7 @@ onUnmounted(() => {
               class="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm transition-all duration-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span class="font-medium">
-                {{ store.config.ollamaModel || (isLoadingOllama ? '正在檢測...' : '請先檢測模型') }}
+                {{ store.config.ollamaModel || (isLoadingOllama ? t('settings.detecting') : t('settings.noModels')) }}
               </span>
               <ChevronDown 
                 :size="18" 
@@ -292,10 +379,10 @@ onUnmounted(() => {
                 @click="detectComfyWorkflows"
                 :disabled="isLoadingComfy"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors flex items-center gap-2"
-                title="檢測 ComfyUI 工作流"
+                :title="t('settings.comfyWorkflow')"
               >
                 <RefreshCw :size="16" :class="{ 'animate-spin': isLoadingComfy }" />
-                檢測
+                {{ t('settings.detect') }}
               </button>
             </div>
           </div>
@@ -303,7 +390,7 @@ onUnmounted(() => {
           <!-- ComfyUI 工作流選擇 -->
           <div class="relative" ref="comfyWorkflowDropdownRef">
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-              <Workflow :size="16" /> ComfyUI 工作流
+              <Workflow :size="16" /> {{ t('settings.comfyWorkflow') }}
             </label>
             <button
               @click.prevent.stop="isComfyWorkflowOpen = !isComfyWorkflowOpen"
@@ -312,7 +399,7 @@ onUnmounted(() => {
               class="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm transition-all duration-300 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span class="font-medium">
-                {{ store.config.comfyWorkflow || (isLoadingComfy ? '正在檢測...' : comfyWorkflows.length === 0 ? '請先檢測工作流' : '選擇工作流') }}
+                {{ store.config.comfyWorkflow || (isLoadingComfy ? t('settings.detecting') : comfyWorkflows.length === 0 ? t('settings.noWorkflows') : t('settings.selectWorkflow')) }}
               </span>
               <ChevronDown 
                 :size="18" 
@@ -345,7 +432,7 @@ onUnmounted(() => {
             </div>
             <p v-if="comfyError" class="text-xs text-red-500 dark:text-red-400 mt-1">{{ comfyError }}</p>
             <p v-if="comfyWorkflows.length === 0 && !isLoadingComfy && !comfyError" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              提示：ComfyUI 工作流需要通過自定義 API 獲取，請確保您的 ComfyUI 服務器支持工作流列表 API
+              {{ t('settings.comfyWorkflowHint') }}
             </p>
           </div>
         </template>
@@ -356,7 +443,7 @@ onUnmounted(() => {
           @click="emit('close')"
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-md transition-colors"
         >
-          Save & Close
+          {{ t('settings.saveClose') }}
         </button>
       </div>
     </div>

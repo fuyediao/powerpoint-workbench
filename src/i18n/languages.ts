@@ -51,8 +51,65 @@ export const SUPPORTED_LANGUAGES: SupportedLanguage[] = languageConfig.map(lang 
 }))
 
 /**
- * 檢測瀏覽器語言並返回對應的 Language enum
+ * 從語言代碼字符串匹配到支持的 Language enum
+ */
+function matchLanguageCode(langCode: string): Language | null {
+  const supportedCodes = languageConfig.map(lang => lang.code)
+  
+  // 嘗試完全匹配（例如：zh-CN）
+  const exactMatch = supportedCodes.find(code => code === langCode)
+  if (exactMatch) {
+    return exactMatch as Language
+  }
+  
+  // 嘗試語言代碼匹配（例如：zh-CN 匹配 zh）
+  const langBase = langCode.split('-')[0]
+  const langMatch = supportedCodes.find(code => code.startsWith(langBase))
+  if (langMatch) {
+    return langMatch as Language
+  }
+  
+  return null
+}
+
+/**
+ * 檢測系統/瀏覽器語言並返回對應的 Language enum
+ * 優先級：Electron 系統語言 > 瀏覽器語言 > 默認英文
+ */
+export async function detectSystemLanguage(): Promise<Language> {
+  // 1. 優先使用 Electron 系統語言
+  if (typeof window !== 'undefined' && window.electronAPI?.app) {
+    try {
+      const systemLocale = await window.electronAPI.app.getLocale()
+      const matched = matchLanguageCode(systemLocale)
+      if (matched) {
+        return matched
+      }
+    } catch (error) {
+      console.warn('Failed to get system locale:', error)
+    }
+  }
+  
+  // 2. 使用瀏覽器語言
+  if (typeof navigator !== 'undefined') {
+    const browserLanguages = navigator.languages || [navigator.language]
+    
+    for (const browserLang of browserLanguages) {
+      const matched = matchLanguageCode(browserLang)
+      if (matched) {
+        return matched
+      }
+    }
+  }
+  
+  // 3. 默認返回英文
+  return Language.EN
+}
+
+/**
+ * 檢測瀏覽器語言並返回對應的 Language enum（同步版本，用於初始化）
  * 如果沒有匹配的語言，返回英文
+ * @deprecated 使用 detectSystemLanguage() 替代，此函數保留用於向後兼容
  */
 export function detectBrowserLanguage(): Language {
   if (typeof navigator === 'undefined') {
