@@ -20,6 +20,10 @@
 [![Vue](https://img.shields.io/badge/Vue-3.5-4fc08d.svg)](https://vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.2-646cff.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8.svg)](https://tailwindcss.com/)
+[![Electron](https://img.shields.io/badge/Electron-33-47848f.svg)](https://www.electronjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933.svg)](https://nodejs.org/)
+[![ESLint](https://img.shields.io/badge/ESLint-9.15-4b32c3.svg)](https://eslint.org/)
+[![License](https://img.shields.io/badge/License-AGPL--3.0-green.svg)](LICENSE)
 
 </div>
 
@@ -807,9 +811,9 @@ toggleTheme()
 
 ## 📝 授权协议
 
-本项目采用 [GNU 通用公共许可证 v2.0](LICENSE) (GPL-2.0)。
+本项目采用 [GNU Affero 通用公共许可证 v3.0](LICENSE) (AGPL-3.0)。
 
-GPL-2.0 许可证允许您：
+AGPL-3.0 许可证允许您：
 - ✅ 商业使用
 - ✅ 修改
 - ✅ 分发
@@ -821,10 +825,13 @@ GPL-2.0 许可证允许您：
 - ✅ 必须说明对代码所做的更改
 - ✅ 必须公开源代码（Copyleft）
 - ✅ 衍生作品必须使用相同许可证
+- ✅ **网络使用**：如果您修改并在服务器上运行该程序，必须向所有通过网络与其交互的用户提供源代码
 
 **限制**：
 - ❌ 责任免除
 - ❌ 无担保
+
+**注意**：AGPL-3.0 专门为网络服务器软件设计。如果您修改此程序并通过网络提供，必须向所有通过网络与其交互的用户提供源代码。
 
 详细条款请参阅 [LICENSE](LICENSE) 文件。
 

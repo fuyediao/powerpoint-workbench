@@ -1,3 +1,3 @@
 @echo off
-npm run dev
+npm run electron:dev
 pause

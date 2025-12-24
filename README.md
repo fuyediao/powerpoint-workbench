@@ -20,6 +20,10 @@ Supports local AI (Ollama + ComfyUI) as an alternative
 [![Vue](https://img.shields.io/badge/Vue-3.5-4fc08d.svg)](https://vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.2-646cff.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8.svg)](https://tailwindcss.com/)
+[![Electron](https://img.shields.io/badge/Electron-33-47848f.svg)](https://www.electronjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933.svg)](https://nodejs.org/)
+[![ESLint](https://img.shields.io/badge/ESLint-9.15-4b32c3.svg)](https://eslint.org/)
+[![License](https://img.shields.io/badge/License-AGPL--3.0-green.svg)](LICENSE)
 
 </div>
 
@@ -807,9 +811,9 @@ Configuration is optimized for the project structure:
 
 ## 📝 License
 
-This project is licensed under the [GNU General Public License v2.0](LICENSE) (GPL-2.0).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
 
-The GPL-2.0 License allows you to:
+The AGPL-3.0 License allows you to:
 - ✅ Commercial use
 - ✅ Modify
 - ✅ Distribute
@@ -821,10 +825,13 @@ The GPL-2.0 License allows you to:
 - ✅ State changes made to the code
 - ✅ Disclose source code (copyleft)
 - ✅ Same license must be used for derivative works
+- ✅ **Network use**: If you modify and run the program on a server, you must provide source code to all users who interact with it remotely
 
 **Limitations**:
 - ❌ Liability disclaimer
 - ❌ No warranty
+
+**Note**: AGPL-3.0 is specifically designed for network server software. If you modify this program and make it available over a network, you must provide the source code to all users who interact with it remotely.
 
 For detailed terms, please refer to the [LICENSE](LICENSE) file.
 

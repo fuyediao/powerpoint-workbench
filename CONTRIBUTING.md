@@ -417,7 +417,7 @@ If you need help:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the GNU General Public License v2.0 (GPL-2.0).
+By contributing, you agree that your contributions will be licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 
 ---
 
