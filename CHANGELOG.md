@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.4] - 2025-12-22
+## [0.1.1] - 2025-12-22
 
 ### Added
 - 系統托盤功能，支持最小化到托盤
@@ -25,11 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修復 IP 檢測結果的翻譯問題
 - 修復 FlagIcons.vue 的構建錯誤
 
-## [0.0.0] - 初始版本
+## [0.1.0] - 2025-12-19
+
+### Added
+- Electron 桌面應用支持
+
+## [0.1.0] - 初始版本
 
 ### Added
 - 基本的 PowerPoint 生成功能
 - Google Gemini API 整合
-- Electron 桌面應用支持
 - 本地 AI 服務支持（Ollama + ComfyUI）
-
