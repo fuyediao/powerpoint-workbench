@@ -407,8 +407,8 @@ lsof -ti:5173 | xargs kill -9
 
 If you need help:
 
-1. Check existing [Issues](https://github.com/ORIGINAL_OWNER/powerpoint-workbench/issues)
-2. Search [Discussions](https://github.com/ORIGINAL_OWNER/powerpoint-workbench/discussions)
+1. Check existing [Issues](https://github.com/fuyediao/powerpoint-workbench/issues)
+2. Search [Discussions](https://github.com/fuyediao/powerpoint-workbench/discussions)
 3. Create a new Issue with:
    - Clear description
    - Steps to reproduce
