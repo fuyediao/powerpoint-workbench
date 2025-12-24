@@ -2,6 +2,14 @@
 
 <div align="center">
 
+**🌐 語言 / Language / 语言**
+
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md)
+
+</div>
+
+<div align="center">
+
 **專業的 AI 驅動 PowerPoint 生成工作台**
 
 使用 Google Gemini 3 Pro、Nano Banana Pro 和 Veo 將文檔轉換為視覺化投影片

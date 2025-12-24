@@ -2,6 +2,14 @@
 
 <div align="center">
 
+**🌐 Language / 简体中文 / 繁體中文**
+
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md)
+
+</div>
+
+<div align="center">
+
 **Professional AI-Powered PowerPoint Generation Workbench**
 
 Transform documents into visual slides using Google Gemini 3 Pro, Nano Banana Pro, and Veo
