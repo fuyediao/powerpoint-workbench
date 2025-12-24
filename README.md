@@ -807,13 +807,20 @@ Configuration is optimized for the project structure:
 
 ## 📝 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU General Public License v2.0](LICENSE) (GPL-2.0).
 
-The MIT License allows you to:
+The GPL-2.0 License allows you to:
 - ✅ Commercial use
 - ✅ Modify
 - ✅ Distribute
 - ✅ Private use
+- ✅ Patent use
+
+**Requirements**:
+- ✅ License and copyright notice must be included
+- ✅ State changes made to the code
+- ✅ Disclose source code (copyleft)
+- ✅ Same license must be used for derivative works
 
 **Limitations**:
 - ❌ Liability disclaimer
