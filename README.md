@@ -867,6 +867,6 @@ For questions or suggestions, please contact us through:
 
 **Built with ❤️ and ☕**
 
-Powered by Google Gemini AI
+Powered by Google Gemini AI and Cursor
 
 </div>
