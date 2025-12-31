@@ -3,15 +3,6 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 
 /**
- * 導出格式類型
- */
-export enum ExportFormat {
-  PDF = 'pdf',
-  IMAGES = 'images',
-  POWERPOINT = 'pptx'
-}
-
-/**
  * 創建幻燈片的 Canvas（使用 SlidePreview 組件）
  */
 async function createSlideCanvas(slide: SlideData): Promise<HTMLCanvasElement | null> {
