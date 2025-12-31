@@ -17,7 +17,7 @@
     "postinstall": "electron-builder install-app-deps || true",
     "rebuild": "@electron/rebuild",
     "electron:dev": "node scripts/check-port.js 5173 && node scripts/build-electron.js && concurrently \"vite\" \"wait-on http://localhost:5173 -t 60000 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\" --kill-others --raw",
-    "electron:build": "npm run electron:build:electron && vite build",
+    "electron:build": "node scripts/generate-mac-icon.js && npm run electron:build:electron && vite build",
     "electron:build:electron": "node scripts/build-electron.js",
     "electron:pack": "npm run electron:build && electron-builder",
     "electron:dist": "npm run electron:build && electron-builder",
@@ -55,7 +55,7 @@
       "target": [
         "dmg"
       ],
-      "icon": "public/icon/favicon.ico",
+      "icon": "build/icon-512.png",
       "category": "public.app-category.productivity"
     },
     "nsis": {
@@ -91,6 +91,7 @@
     "esbuild": "^0.24.0",
     "eslint": "^9.15.0",
     "eslint-plugin-vue": "^9.32.0",
+    "sharp": "^0.34.5",
     "sql.js": "^1.13.0",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^36.0.1",
