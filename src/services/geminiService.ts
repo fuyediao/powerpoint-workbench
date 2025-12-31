@@ -1,5 +1,4 @@
 import { GoogleGenAI, Type } from '@google/genai'
-import * as XLSX from 'xlsx'
 import { type SlideData, SlideStyle, SlideStatus } from '@/types'
 import { getOutlinePrompt, getResearchPrompt, IMAGE_GENERATION_CONFIG, VIDEO_GENERATION_CONFIG } from '@/prompts'
 
@@ -102,8 +101,12 @@ const getMimeType = (file: File): string => {
 /**
  * Convert Excel file to CSV text
  * 使用 xlsx 庫將 Excel 文件轉換為 CSV 格式
+ * 動態導入 xlsx 庫以減少初始 bundle 大小
  */
 const excelToCsv = async (file: File): Promise<string> => {
+  // 動態導入 xlsx 庫，只在需要處理 Excel 文件時加載
+  const XLSX = await import('xlsx')
+  
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => {

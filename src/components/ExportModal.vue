@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { X, FileText, Image, Presentation, Download } from 'lucide-vue-next'
-import { ExportFormat } from '@/services/exportService'
+import { ExportFormat } from '@/types'
 import { useI18n } from '@/composables/useI18n'
 import type { SlideData } from '@/types'
 import { computed } from 'vue'

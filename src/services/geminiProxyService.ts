@@ -5,7 +5,6 @@
 
 import { type SlideData, SlideStyle, SlideStatus } from '@/types'
 import { getOutlinePrompt, IMAGE_GENERATION_CONFIG } from '@/prompts'
-import * as XLSX from 'xlsx'
 
 interface ProxyConfig {
   proxyEndpoint: string
@@ -117,8 +116,12 @@ async function fileToInlineData(file: File): Promise<{ mimeType: string; data: s
 
 /**
  * Excel 轉 CSV
+ * 動態導入 xlsx 庫以減少初始 bundle 大小
  */
 async function excelToCsv(file: File): Promise<string> {
+  // 動態導入 xlsx 庫，只在需要處理 Excel 文件時加載
+  const XLSX = await import('xlsx')
+  
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => {

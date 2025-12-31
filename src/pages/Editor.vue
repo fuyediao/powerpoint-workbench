@@ -3,12 +3,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/projectStore'
 import { useI18n } from '@/composables/useI18n'
-import { generateOutline, generateFullSlideImage, generateVeoVideo } from '@/services/geminiService'
-import { generateOutlineWithProxy, generateFullSlideImageWithProxy } from '@/services/geminiProxyService'
-import { AiProvider, type SlideData, SlideStatus } from '@/types'
+import { AiProvider, type SlideData, SlideStatus, ExportFormat } from '@/types'
 import SlidePreview from '@/components/SlidePreview.vue'
-import ExportModal from '@/components/ExportModal.vue'
-import GenerateAllModal from '@/components/GenerateAllModal.vue'
+import { defineAsyncComponent } from 'vue'
+
+// 動態導入 Modal 組件以減少初始 bundle 大小
+const ExportModal = defineAsyncComponent(() => import('@/components/ExportModal.vue'))
+const GenerateAllModal = defineAsyncComponent(() => import('@/components/GenerateAllModal.vue'))
 import {
   Sparkles,
   Image as ImageIcon,
@@ -21,7 +22,6 @@ import {
   Maximize2,
   Home
 } from 'lucide-vue-next'
-import { ExportFormat, exportToPDF, exportToImages, exportToPowerPoint } from '@/services/exportService'
 
 const router = useRouter()
 const store = useProjectStore()
@@ -65,6 +65,10 @@ onMounted(async () => {
     loadingMessage.value = t.value('status.thinking')
     try {
       if (store.config.provider === AiProvider.GOOGLE && store.config.apiKey) {
+        // 動態導入服務函數以減少初始 bundle 大小
+        const { generateOutline } = await import('@/services/geminiService')
+        const { generateOutlineWithProxy } = await import('@/services/geminiProxyService')
+        
         let newSlides: SlideData[]
         
         // 檢查是否使用代理
@@ -206,6 +210,10 @@ const handleGenerateImage = async (slide: SlideData) => {
 
   store.updateSlide(slide.id, { status: SlideStatus.GENERATING })
   try {
+    // 動態導入服務函數
+    const { generateFullSlideImage } = await import('@/services/geminiService')
+    const { generateFullSlideImageWithProxy } = await import('@/services/geminiProxyService')
+    
     // 使用 nano banana 生成整頁圖片（包含標題、內容等所有元素）
     const useProxy = store.config.useProxy && store.config.proxyEndpoint
     const b64 = useProxy
@@ -244,6 +252,8 @@ const handleGenerateVideo = async (slide: SlideData) => {
 
   store.updateSlide(slide.id, { status: SlideStatus.GENERATING })
   try {
+    // 動態導入服務函數
+    const { generateVeoVideo } = await import('@/services/geminiService')
     const videoUrl = await generateVeoVideo(store.config.apiKey, prompt)
     store.updateSlide(slide.id, { videoUrl: videoUrl, status: SlideStatus.DONE })
   } catch (e) {
@@ -278,6 +288,9 @@ const confirmGenerateAll = async () => {
   if (!store.config.apiKey) {
     return
   }
+
+  // 動態導入服務函數
+  const { generateFullSlideImage } = await import('@/services/geminiService')
 
   // 在開始生成前，先快照需要生成的投影片列表，避免 computed 屬性在循環過程中動態變化
   const slidesToProcess = [...slidesToGenerate.value]
@@ -405,6 +418,9 @@ const updateSlideSpeakerNotes = (value: string) => {
 
 const handleExport = async (format: ExportFormat) => {
   try {
+    // 動態導入導出服務以減少初始 bundle 大小
+    const { exportToPDF, exportToImages, exportToPowerPoint } = await import('@/services/exportService')
+    
     switch (format) {
       case ExportFormat.PDF:
         await exportToPDF(store.slides)

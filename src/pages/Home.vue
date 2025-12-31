@@ -6,12 +6,28 @@ import { useTheme } from '@/composables/useTheme'
 import { useProjectStore } from '@/stores/projectStore'
 import { Language, SlideStyle, AiProvider, type SupportedLanguage } from '@/types'
 import { SUPPORTED_LANGUAGES } from '@/constants'
-import SettingsModal from '@/components/SettingsModal.vue'
 import { Settings, FileText, Upload, Globe, Palette, Moon, Sun, X, ChevronDown, Check, Maximize2 } from 'lucide-vue-next'
 import type { UploadedFile } from '@/stores/projectStore'
-import TextEditorModal from '@/components/TextEditorModal.vue'
-import { UnitedStatesFlag, ChinaFlag, TaiwanFlag } from '@/flag/FlagIcons.vue'
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
+
+// 動態導入 Modal 組件以減少初始 bundle 大小
+const SettingsModal = defineAsyncComponent(() => import('@/components/SettingsModal.vue'))
+const TextEditorModal = defineAsyncComponent(() => import('@/components/TextEditorModal.vue'))
+
+// 動態導入國旗組件（按需加載）
+let UnitedStatesFlag: ((props: { size?: number }) => ReturnType<typeof h>) | null = null
+let ChinaFlag: ((props: { size?: number }) => ReturnType<typeof h>) | null = null
+let TaiwanFlag: ((props: { size?: number }) => ReturnType<typeof h>) | null = null
+
+// 預加載國旗組件（在組件掛載時）
+const loadFlagIcons = async () => {
+  if (!UnitedStatesFlag) {
+    const flagIcons = await import('@/flag/FlagIcons.vue')
+    UnitedStatesFlag = flagIcons.UnitedStatesFlag
+    ChinaFlag = flagIcons.ChinaFlag
+    TaiwanFlag = flagIcons.TaiwanFlag
+  }
+}
 
 const router = useRouter()
 const store = useProjectStore()
@@ -35,8 +51,10 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('mousedown', handleClickOutside)
+  // 預加載國旗組件
+  await loadFlagIcons()
   // 當返回首頁時，如果有舊的投影片數據，清除它們（但保留配置）
   // 這樣可以確保開始新專案時不會顯示舊專案的內容
   if (store.slides.length > 0) {
@@ -141,11 +159,11 @@ const handleTextUpdate = (content: string) => {
 const getFlagComponent = (langCode: string) => {
   switch (langCode) {
     case 'en':
-      return h(UnitedStatesFlag, { size: 16 })
+      return UnitedStatesFlag ? h(UnitedStatesFlag, { size: 16 }) : h(Globe, { size: 16 })
     case 'zh-CN':
-      return h(ChinaFlag, { size: 16 })
+      return ChinaFlag ? h(ChinaFlag, { size: 16 }) : h(Globe, { size: 16 })
     case 'zh-TW':
-      return h(TaiwanFlag, { size: 16 })
+      return TaiwanFlag ? h(TaiwanFlag, { size: 16 }) : h(Globe, { size: 16 })
     default:
       return h(Globe, { size: 16 })
   }
