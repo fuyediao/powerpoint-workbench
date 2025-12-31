@@ -11,10 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest, macos-latest]
         include:
-          - os: ubuntu-latest
-            artifact_name: linux
           - os: windows-latest
             artifact_name: windows
           - os: macos-latest
@@ -49,7 +47,6 @@ jobs:
           path: |
             dist-electron/*.exe
             dist-electron/*.dmg
-            dist-electron/*.AppImage
             dist-electron/*.zip
             dist-electron/*.blockmap
             dist-electron/*.yml
@@ -88,7 +85,6 @@ jobs:
             
             - **Windows**: 下載 `.exe` 文件
             - **macOS**: 下載 `.dmg` 文件
-            - **Linux**: 下載 `.AppImage` 文件
             
             ### 更新內容
             
@@ -96,7 +92,6 @@ jobs:
           files: |
             artifacts/windows-dist/*
             artifacts/macos-dist/*
-            artifacts/linux-dist/*
           draft: false
           prerelease: false
         env:
