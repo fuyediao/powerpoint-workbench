@@ -17,7 +17,7 @@
     "postinstall": "electron-builder install-app-deps || true",
     "rebuild": "@electron/rebuild",
     "electron:dev": "node scripts/check-port.js 5173 && node scripts/build-electron.js && concurrently \"vite\" \"wait-on http://localhost:5173 -t 60000 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\" --kill-others --raw",
-    "electron:build": "npm run electron:build:electron && vite build",
+    "electron:build": "node scripts/generate-linux-icon.js && npm run electron:build:electron && vite build",
     "electron:build:electron": "node scripts/build-electron.js",
     "electron:pack": "npm run electron:build && electron-builder",
     "electron:dist": "npm run electron:build && electron-builder",
@@ -62,7 +62,8 @@
       "target": [
         "AppImage"
       ],
-      "category": "Office"
+      "category": "Office",
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
