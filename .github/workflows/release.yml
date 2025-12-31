@@ -11,12 +11,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         include:
           - os: windows-latest
             artifact_name: windows
-          - os: macos-latest
-            artifact_name: macos
 
     steps:
       - name: Checkout code
@@ -46,7 +44,6 @@ jobs:
           name: ${{ matrix.artifact_name }}-dist
           path: |
             dist-electron/*.exe
-            dist-electron/*.dmg
             dist-electron/*.zip
             dist-electron/*.blockmap
             dist-electron/*.yml
@@ -84,14 +81,12 @@ jobs:
             ### 下載安裝包
             
             - **Windows**: 下載 `.exe` 文件
-            - **macOS**: 下載 `.dmg` 文件
             
             ### 更新內容
             
             請查看 [CHANGELOG.md](CHANGELOG.md) 了解詳細更新內容。
           files: |
             artifacts/windows-dist/*
-            artifacts/macos-dist/*
           draft: false
           prerelease: false
         env:
