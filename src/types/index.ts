@@ -26,6 +26,12 @@ export enum SlideStatus {
   ERROR = 'error'
 }
 
+export enum ExportFormat {
+  PDF = 'pdf',
+  IMAGES = 'images',
+  POWERPOINT = 'pptx'
+}
+
 export interface SlideData {
   id: string;
   order: number;

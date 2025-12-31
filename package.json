@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:analyze": "cross-env ANALYZE=true vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -84,6 +85,7 @@
     "esbuild": "^0.24.0",
     "eslint": "^9.15.0",
     "eslint-plugin-vue": "^9.32.0",
+    "rollup-plugin-visualizer": "^6.0.5",
     "sharp": "^0.34.5",
     "sql.js": "^1.13.0",
     "stylelint": "^16.26.1",
