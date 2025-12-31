@@ -2,6 +2,8 @@
   "name": "gemini-ppt-workbench",
   "private": true,
   "version": "0.1.4",
+  "description": "Professional AI-Powered PowerPoint Generation Workbench. Transform documents into visual slides using Google Gemini 3 Pro, Nano Banana Pro, and Veo. Supports local AI (Ollama + ComfyUI) as an alternative.",
+  "author": "Gemini PPT Workbench Contributors",
   "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
@@ -60,7 +62,6 @@
       "target": [
         "AppImage"
       ],
-      "icon": "public/icon/favicon.ico",
       "category": "Office"
     },
     "nsis": {
